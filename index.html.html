@@ -1,0 +1,1518 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="ar">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>قياس الرضا في المراكز الصحية .. مقترح منهجي</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    :root {
+      --teal-900: #063A38;
+      --teal-700: #0B6663;
+      --teal-500: #128C87;
+      --teal-300: #48CFAE;
+      --teal-100: #D8EFE8;
+      --teal-50:  #EDF7F3;
+      --gold-800: #6B5F30;
+      --gold-600: #897C41;
+      --gold-400: #B8A667;
+      --gold-200: #E8DCB2;
+      --gold-50:  #F6F1DE;
+      --ink-900: #0C1F20;
+      --ink-700: #1F3A3A;
+      --ink-500: #3E5656;
+      --ink-300: #7B8E8E;
+      --ink-200: #AEBBB9;
+      --paper:   #FAF8F2;
+      --paper-2: #F3EEE1;
+      --paper-3: #EAE1CC;
+      --white:   #FFFFFF;
+      --danger:  #B5330F;
+      --warn:    #C48712;
+      --ok:      #2A7A4A;
+      --shadow-soft: 0 10px 40px -12px rgba(11,102,99,0.12);
+      --shadow-card: 0 4px 20px -6px rgba(12,31,32,0.08);
+      --shadow-lift: 0 24px 60px -20px rgba(12,31,32,0.25);
+      --cairo: 'Cairo', sans-serif;
+      --num:   'Outfit', sans-serif;
+      --maxw: 1180px;
+      --gutter: clamp(20px, 4vw, 64px);
+    }
+    *{box-sizing:border-box;margin:0;padding:0;}
+    html{scroll-behavior:smooth;}
+    body{
+      font-family:var(--cairo);
+      font-weight:400;
+      color:var(--ink-900);
+      background:var(--paper);
+      line-height:1.8;
+      overflow-x:hidden;
+      -webkit-font-smoothing:antialiased;
+    }
+    ::selection{background:var(--teal-300);color:var(--teal-900);}
+    body::before{
+      content:'';position:fixed;inset:0;pointer-events:none;z-index:1;
+      opacity:0.25;mix-blend-mode:multiply;
+      background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='280' height='280'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.95' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 0.05 0 0 0 0 0.1 0 0 0 0 0.1 0 0 0 0.06 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+    }
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:0 var(--gutter);position:relative;z-index:2;}
+
+    /* PROGRESS */
+    .progress{position:fixed;top:0;inset-inline-start:0;right:0;height:3px;z-index:100;
+      background:linear-gradient(90deg,var(--teal-700),var(--teal-300) 60%,var(--gold-600));width:0%;transition:width 0.1s linear;}
+
+    /* SIDE NAV */
+    .side-nav{position:fixed;inset-inline-start:28px;top:50%;transform:translateY(-50%);z-index:50;
+      display:flex;flex-direction:column;gap:14px;opacity:0;transition:opacity 0.6s ease;}
+    .side-nav.show{opacity:1;}
+    .side-nav a{position:relative;width:10px;height:10px;border-radius:50%;background:var(--ink-200);transition:all 0.25s ease;}
+    .side-nav a::after{content:attr(data-label);position:absolute;inset-inline-start:20px;top:50%;transform:translateY(-50%);
+      font-family:var(--cairo);font-size:12px;font-weight:600;color:var(--ink-700);background:var(--white);
+      border:1px solid var(--paper-3);padding:4px 12px;border-radius:100px;white-space:nowrap;opacity:0;pointer-events:none;transition:opacity 0.2s ease;}
+    .side-nav a:hover{background:var(--teal-700);transform:scale(1.3);}
+    .side-nav a:hover::after{opacity:1;}
+    .side-nav a.active{background:var(--gold-600);width:28px;border-radius:100px;}
+    @media(max-width:1024px){.side-nav{display:none;}}
+
+    /* TOPBAR */
+    .topbar{position:sticky;top:0;z-index:40;background:rgba(250,248,242,0.95);border-bottom:1px solid rgba(12,31,32,0.07);backdrop-filter:blur(12px);}
+    .topbar-inner{display:flex;align-items:center;justify-content:space-between;padding:12px 0;}
+    .brand-mark{display:flex;align-items:center;gap:14px;}
+    .brand-logo-img{height:44px;width:auto;}
+    .brand-title{font-family:var(--cairo);font-size:14px;font-weight:700;color:var(--teal-900);line-height:1.3;}
+    .brand-title span{display:block;font-size:11px;font-weight:400;color:var(--gold-600);}
+    .topbar-meta{font-family:var(--num);font-size:12px;color:var(--ink-500);letter-spacing:0.02em;display:flex;align-items:center;gap:8px;}
+    .pulse{display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--teal-300);animation:pulse 2.4s infinite;}
+    @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(72,207,174,0.6);}50%{box-shadow:0 0 0 8px rgba(72,207,174,0);}}
+    @media(max-width:640px){.topbar-meta{display:none;}.brand-title{display:none;}}
+
+    /* HERO */
+    .hero{padding:clamp(50px,9vh,120px) 0 70px;position:relative;overflow:hidden;}
+    .hero-study-banner{background:var(--teal-900);color:var(--paper);border-radius:16px;padding:18px 28px;
+      margin-bottom:40px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;}
+    .hero-study-label{font-family:var(--cairo);font-size:13px;font-weight:400;color:var(--teal-300);}
+    .hero-study-title{font-family:var(--cairo);font-size:clamp(17px,2vw,21px);font-weight:700;color:var(--paper);}
+    .hero-study-meta{font-family:var(--num);font-size:12px;color:var(--gold-400);}
+    .hero-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(30px,6vw,80px);align-items:start;}
+    @media(max-width:860px){.hero-grid{grid-template-columns:1fr;}}
+    .hero-eyebrow{display:none;}
+    .hero-title{font-family:var(--cairo);font-weight:800;font-size:clamp(32px,5.5vw,62px);line-height:1.1;
+      color:var(--teal-900);margin-top:28px;letter-spacing:-0.01em;}
+    .hero-title em{font-style:normal;background:linear-gradient(180deg,transparent 58%,var(--gold-200) 58%);padding:0 4px;}
+    .hero-kicker{margin-top:24px;font-family:var(--cairo);font-style:italic;font-size:clamp(16px,1.8vw,20px);
+      line-height:1.75;color:var(--ink-500);max-width:52ch;font-weight:300;}
+    .hero-logo-big{margin-top:32px;display:flex;align-items:center;gap:20px;padding:20px 24px;
+      background:var(--white);border-radius:16px;box-shadow:var(--shadow-card);border:1px solid var(--paper-3);}
+    .hero-logo-big img{height:72px;width:auto;}
+    .hero-logo-text{font-family:var(--cairo);font-size:15px;font-weight:700;color:var(--teal-900);line-height:1.4;}
+    .hero-logo-text span{display:block;font-size:12px;font-weight:400;color:var(--gold-600);}
+    .hero-card{background:var(--white);border-radius:20px;padding:28px;box-shadow:var(--shadow-card);
+      border:1px solid rgba(12,31,32,0.05);position:relative;}
+    .hero-card::before{content:'';position:absolute;top:-1px;right:-1px;left:-1px;height:4px;
+      background:linear-gradient(90deg,var(--teal-700),var(--teal-300),var(--gold-600));border-radius:20px 20px 0 0;}
+    .hero-card-label{font-family:var(--num);font-size:11px;font-weight:600;color:var(--ink-500);letter-spacing:0.2em;text-transform:uppercase;}
+    .hero-card-q{font-family:var(--cairo);font-size:clamp(18px,2vw,24px);color:var(--teal-900);margin-top:14px;line-height:1.4;font-weight:700;}
+    .hero-card-a{margin-top:16px;font-size:15px;line-height:1.9;color:var(--ink-700);}
+    .hero-card-a strong{color:var(--teal-700);font-weight:700;}
+    .hero-meta{margin-top:50px;padding-top:28px;border-top:1px solid var(--paper-3);display:grid;
+      grid-template-columns:repeat(4,1fr);gap:20px;}
+    @media(max-width:640px){.hero-meta{grid-template-columns:repeat(2,1fr);}}
+    .hero-meta-item{border-inline-end:1px solid var(--paper-3);padding-inline-end:20px;}
+    .hero-meta-item:last-child{border-inline-end:none;}
+    .hero-meta-k{font-family:var(--num);font-size:10px;font-weight:600;color:var(--gold-600);letter-spacing:0.2em;text-transform:uppercase;}
+    .hero-meta-v{font-family:var(--cairo);font-size:15px;color:var(--ink-900);margin-top:6px;font-weight:700;}
+
+    /* SECTION PRIMITIVES */
+    section{padding:clamp(50px,9vh,100px) 0;position:relative;}
+    .section-tag{display:inline-flex;align-items:baseline;gap:14px;font-family:var(--num);font-size:11px;
+      color:var(--ink-500);letter-spacing:0.22em;text-transform:uppercase;font-weight:600;margin-bottom:22px;}
+    .section-tag .num{font-family:var(--cairo);font-size:42px;font-weight:800;color:var(--gold-600);line-height:1;}
+    .section-title{font-family:var(--cairo);font-size:clamp(28px,4vw,46px);font-weight:800;line-height:1.18;
+      color:var(--teal-900);max-width:24ch;}
+    .section-lead{margin-top:18px;font-family:var(--cairo);font-size:clamp(16px,1.7vw,18px);line-height:1.85;
+      color:var(--ink-700);max-width:64ch;font-weight:400;}
+    .section-body{margin-top:32px;font-size:16px;line-height:1.9;color:var(--ink-900);}
+    .section-body p{margin-bottom:16px;max-width:70ch;}
+    .section-body p strong{color:var(--teal-700);font-weight:700;}
+
+    /* PLAIN LANGUAGE BOX */
+    .plain-box{background:var(--teal-50);border:1px solid var(--teal-100);border-radius:14px;
+      padding:20px 24px;margin-top:24px;display:flex;gap:16px;align-items:flex-start;}
+    .plain-box-marker{width:3px;min-height:40px;background:var(--teal-500);border-radius:3px;flex-shrink:0;margin-top:2px;}
+    .plain-box-content{}
+    .plain-box-label{font-family:var(--cairo);font-size:12px;font-weight:700;color:var(--teal-700);
+      margin-bottom:6px;}
+    .plain-box-text{font-size:14px;color:var(--ink-700);line-height:1.8;}
+
+    /* PARADOX */
+    .paradox{background:linear-gradient(180deg,transparent,var(--teal-50) 30%,var(--teal-50) 70%,transparent);}
+    .paradox-card{background:var(--teal-900);color:var(--paper);border-radius:24px;padding:clamp(36px,6vw,72px);
+      position:relative;overflow:hidden;margin-top:36px;}
+    .paradox-card::before{content:'';position:absolute;inset-inline-end:-80px;top:-80px;width:320px;height:320px;
+      border:1px solid rgba(72,207,174,0.2);border-radius:50%;}
+    .paradox-mark{font-family:var(--cairo);font-size:110px;line-height:1;color:var(--gold-400);opacity:0.5;
+      position:absolute;inset-inline-start:40px;top:20px;font-weight:800;}
+    .paradox-quote{font-family:var(--cairo);font-size:clamp(20px,2.8vw,32px);line-height:1.5;font-weight:700;
+      max-width:32ch;position:relative;z-index:2;}
+    .paradox-quote strong{color:var(--teal-300);}
+    .paradox-meta{margin-top:32px;padding-top:24px;border-top:1px solid rgba(72,207,174,0.2);
+      display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:20px;position:relative;z-index:2;}
+    .paradox-meta span{font-family:var(--num);font-size:12px;color:var(--teal-300);letter-spacing:0.2em;text-transform:uppercase;}
+    .paradox-meta b{color:var(--paper);font-family:var(--cairo);font-size:16px;font-weight:600;}
+    .stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:50px;
+      border-top:2px solid var(--ink-900);border-bottom:2px solid var(--ink-900);}
+    @media(max-width:760px){.stats-grid{grid-template-columns:1fr;}}
+    .stat-item{padding:32px 24px;border-inline-end:1px solid var(--paper-3);}
+    .stat-item:last-child{border-inline-end:none;}
+    @media(max-width:760px){.stat-item{border-inline-end:none;border-bottom:1px solid var(--paper-3);}.stat-item:last-child{border-bottom:none;}}
+    .stat-k{font-family:var(--num);font-size:11px;font-weight:700;letter-spacing:0.22em;text-transform:uppercase;color:var(--gold-600);}
+    .stat-v{font-family:var(--num);font-size:clamp(44px,6vw,68px);font-weight:800;color:var(--teal-900);line-height:1;margin:14px 0;font-feature-settings:'tnum';}
+    .stat-v sup{font-size:0.4em;vertical-align:super;color:var(--gold-600);}
+    .stat-d{font-size:14px;color:var(--ink-500);line-height:1.7;}
+
+    /* ACCORDION */
+    .causes{margin-top:46px;}
+    .cause{border-top:1px solid var(--paper-3);transition:background 0.3s;}
+    .cause:last-child{border-bottom:1px solid var(--paper-3);}
+    .cause-head{width:100%;display:grid;grid-template-columns:80px 1fr auto;align-items:center;gap:20px;
+      padding:24px 10px;background:none;border:none;cursor:pointer;text-align:right;font-family:inherit;transition:all 0.3s;}
+    .cause-head:hover{background:var(--teal-50);padding-inline-start:20px;}
+    .cause-num{font-family:var(--cairo);font-size:13px;font-weight:700;color:var(--gold-600);letter-spacing:0.1em;
+      padding:6px 10px;border:1px solid var(--gold-200);border-radius:4px;background:var(--gold-50);text-align:center;white-space:nowrap;}
+    .cause-title{font-family:var(--cairo);font-size:clamp(17px,2.2vw,21px);color:var(--ink-900);font-weight:700;}
+    .cause-toggle{width:34px;height:34px;border-radius:50%;border:1px solid var(--paper-3);display:grid;
+      place-items:center;color:var(--teal-700);transition:all 0.3s;flex-shrink:0;}
+    .cause.open .cause-toggle{background:var(--teal-700);color:var(--white);border-color:var(--teal-700);transform:rotate(180deg);}
+    .cause-body{max-height:0;overflow:hidden;transition:max-height 0.5s cubic-bezier(0.22,1,0.36,1);}
+    .cause.open .cause-body{max-height:700px;}
+    .cause-inner{padding:0 10px 28px;padding-inline-start:100px;font-size:15px;line-height:1.9;color:var(--ink-500);}
+    .cause-inner ul{list-style:none;display:grid;gap:10px;margin-top:10px;}
+    .cause-inner li{position:relative;padding-inline-start:20px;}
+    .cause-inner li::before{content:'';position:absolute;inset-inline-start:0;top:13px;width:8px;height:1px;background:var(--gold-600);}
+
+    /* RIPPLES */
+    .ripples{background:var(--ink-900);color:var(--paper);}
+    .ripples .section-tag{color:var(--teal-300);}
+    .ripples .section-tag .num{color:var(--gold-400);}
+    .ripples .section-title{color:var(--paper);}
+    .ripples .section-lead{color:var(--ink-200);}
+    .ripples-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-top:46px;}
+    @media(max-width:860px){.ripples-grid{grid-template-columns:repeat(2,1fr);}}
+    @media(max-width:480px){.ripples-grid{grid-template-columns:1fr;}}
+    .ripple{background:rgba(255,255,255,0.04);border:1px solid rgba(72,207,174,0.15);border-radius:16px;padding:22px 18px;transition:all 0.3s;}
+    .ripple:hover{background:rgba(72,207,174,0.08);border-color:var(--teal-300);transform:translateY(-4px);}
+    .ripple-dot{width:10px;height:10px;border-radius:50%;background:var(--teal-300);margin-bottom:14px;box-shadow:0 0 0 4px rgba(72,207,174,0.15);}
+    .ripple-who{font-family:var(--num);font-size:11px;font-weight:700;color:var(--teal-300);letter-spacing:0.18em;text-transform:uppercase;}
+    .ripple-what{font-family:var(--cairo);font-size:16px;font-weight:700;color:var(--paper);margin-top:10px;line-height:1.4;}
+    .ripple-then{font-size:13px;color:var(--ink-200);margin-top:12px;padding-top:12px;border-top:1px dashed rgba(255,255,255,0.1);line-height:1.7;}
+
+    /* BENCHMARKS */
+    .bench-tabs{margin-top:46px;display:flex;flex-wrap:wrap;gap:6px;padding:6px;background:var(--paper-2);border-radius:14px;}
+    .bench-tab{flex:1;min-width:100px;padding:11px 16px;background:transparent;border:none;font-family:var(--cairo);
+      font-size:14px;font-weight:600;color:var(--ink-500);border-radius:10px;cursor:pointer;transition:all 0.25s;}
+    .bench-tab:hover{color:var(--teal-900);}
+    .bench-tab.active{background:var(--white);color:var(--teal-900);box-shadow:var(--shadow-card);}
+    .bench-panel{display:none;margin-top:28px;background:var(--white);border-radius:20px;padding:clamp(24px,4vw,40px);
+      box-shadow:var(--shadow-card);border:1px solid var(--paper-3);animation:fadeInUp 0.4s ease;}
+    .bench-panel.active{display:block;}
+    @keyframes fadeInUp{from{opacity:0;transform:translateY(10px);}to{opacity:1;transform:translateY(0);}}
+    .bench-head{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:baseline;margin-bottom:22px;padding-bottom:18px;border-bottom:1px dashed var(--paper-3);}
+    .bench-name{font-family:var(--cairo);font-size:clamp(20px,2.8vw,28px);color:var(--teal-900);font-weight:800;}
+    .bench-origin{font-family:var(--num);font-size:12px;color:var(--gold-600);letter-spacing:0.15em;text-transform:uppercase;}
+    .bench-content{display:grid;grid-template-columns:1fr 1fr;gap:28px;}
+    @media(max-width:680px){.bench-content{grid-template-columns:1fr;}}
+    .bench-block h4{font-family:var(--num);font-size:11px;font-weight:700;color:var(--ink-500);letter-spacing:0.2em;text-transform:uppercase;margin-bottom:10px;}
+    .bench-block p{font-size:15px;line-height:1.8;color:var(--ink-900);}
+    .bench-lesson{margin-top:22px;padding:18px 20px;background:var(--gold-50);border-inline-start:4px solid var(--gold-600);
+      border-radius:0 12px 12px 0;font-family:var(--cairo);font-size:15px;line-height:1.75;color:var(--ink-700);font-weight:500;}
+
+    /* FIVE TOOLS */
+    .tools-grid{margin-top:50px;display:grid;grid-template-columns:repeat(12,1fr);gap:18px;}
+    .tool{background:var(--white);border-radius:20px;padding:28px 24px;box-shadow:var(--shadow-card);
+      border:1px solid rgba(12,31,32,0.05);position:relative;overflow:hidden;transition:all 0.3s;
+      cursor:pointer;display:flex;flex-direction:column;}
+    .tool:hover{transform:translateY(-4px);box-shadow:var(--shadow-lift);}
+    .tool::before{content:'';position:absolute;inset-inline-start:0;top:0;bottom:0;width:4px;background:var(--teal-700);}
+    .tool.t2::before{background:var(--teal-300);}
+    .tool.t3::before{background:var(--gold-600);}
+    .tool.t4::before{background:var(--danger);}
+    .tool.t5::before{background:var(--ink-700);}
+    .tool.t1{grid-column:span 7;}
+    .tool.t2{grid-column:span 5;}
+    .tool.t3{grid-column:span 4;}
+    .tool.t4{grid-column:span 4;}
+    .tool.t5{grid-column:span 4;}
+    @media(max-width:860px){.tool.t1,.tool.t2,.tool.t3,.tool.t4,.tool.t5{grid-column:span 12;}}
+    .tool-num{font-family:var(--cairo);font-size:12px;font-weight:700;color:var(--gold-600);letter-spacing:0.18em;}
+    .tool-title{font-family:var(--cairo);font-size:clamp(18px,2.2vw,23px);color:var(--teal-900);margin-top:10px;line-height:1.35;font-weight:800;}
+    .tool-role{margin-top:14px;padding:9px 12px;background:var(--teal-50);border-radius:8px;font-size:13px;
+      color:var(--teal-700);font-weight:600;display:inline-flex;align-items:center;gap:8px;}
+    .tool-role::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--teal-300);}
+    .tool-brief{margin-top:18px;font-size:15px;line-height:1.85;color:var(--ink-500);flex:1;}
+    .tool-open{margin-top:20px;align-self:flex-start;padding:9px 16px;background:transparent;border:1px solid var(--teal-700);
+      color:var(--teal-700);border-radius:100px;font-family:var(--cairo);font-size:13px;font-weight:600;
+      cursor:pointer;transition:all 0.25s;display:inline-flex;align-items:center;gap:8px;}
+    .tool-open:hover{background:var(--teal-700);color:var(--white);}
+    .tool-open svg{width:14px;height:14px;}
+    .smile-row{margin-top:16px;display:flex;gap:8px;}
+    .smile{flex:1;aspect-ratio:1;background:var(--paper-2);border-radius:10px;display:grid;place-items:center;font-size:20px;cursor:default;transition:all 0.25s;}
+    .smile:hover{transform:scale(1.1);background:var(--teal-100);}
+
+    /* INDEX */
+    .index-sect{background:linear-gradient(180deg,var(--paper),var(--paper-2));}
+    .index-grid{margin-top:46px;display:grid;grid-template-columns:1fr 1fr;gap:36px;align-items:center;}
+    @media(max-width:860px){.index-grid{grid-template-columns:1fr;}}
+    .gauge-wrap{background:var(--white);border-radius:24px;padding:36px;box-shadow:var(--shadow-card);position:relative;overflow:hidden;}
+    .gauge-wrap::before{content:'';position:absolute;top:-40px;inset-inline-end:-40px;width:200px;height:200px;background:var(--teal-50);border-radius:50%;opacity:0.6;}
+    .gauge-canvas{position:relative;z-index:2;height:300px;}
+    .gauge-center{position:absolute;top:50%;left:50%;transform:translate(-50%,-18%);text-align:center;z-index:3;pointer-events:none;}
+    .gauge-value{font-family:var(--num);font-size:52px;font-weight:800;color:var(--teal-900);line-height:1;font-feature-settings:'tnum';}
+    .gauge-value .pct{font-size:0.5em;color:var(--gold-600);vertical-align:top;margin-inline-start:4px;}
+    .gauge-label{font-family:var(--cairo);font-size:13px;color:var(--ink-500);margin-top:6px;font-weight:500;}
+    .weights-breakdown{display:grid;gap:12px;}
+    .weight-row{display:grid;grid-template-columns:1fr auto;gap:14px;align-items:center;padding:14px 18px;
+      background:var(--white);border-radius:14px;border:1px solid var(--paper-3);}
+    .weight-info{display:flex;align-items:center;gap:12px;}
+    .weight-dot{width:14px;height:14px;border-radius:4px;flex-shrink:0;}
+    .weight-name{font-family:var(--cairo);font-size:15px;color:var(--ink-900);font-weight:600;}
+    .weight-bar{position:relative;height:4px;background:var(--paper-2);border-radius:2px;overflow:hidden;margin-top:5px;}
+    .weight-bar span{position:absolute;inset-inline-start:0;top:0;bottom:0;border-radius:2px;transition:width 1s cubic-bezier(0.4,0,0.2,1);}
+    .weight-pct{font-family:var(--num);font-size:20px;font-weight:700;color:var(--teal-900);font-feature-settings:'tnum';}
+
+
+    /* CALCULATOR */
+    .calc{margin-top:50px;background:var(--teal-900);color:var(--paper);border-radius:24px;padding:clamp(28px,5vw,54px);position:relative;overflow:hidden;}
+    .calc::before{content:'';position:absolute;bottom:-100px;inset-inline-start:-100px;width:300px;height:300px;border-radius:50%;border:1px solid rgba(72,207,174,0.15);}
+    .calc-title{font-family:var(--cairo);font-size:clamp(20px,2.8vw,28px);color:var(--paper);font-weight:800;}
+    .calc-lead{margin-top:10px;font-size:15px;color:var(--ink-200);max-width:56ch;line-height:1.85;}
+    .calc-grid{margin-top:32px;display:grid;grid-template-columns:1.3fr 1fr;gap:36px;position:relative;z-index:2;}
+    @media(max-width:760px){.calc-grid{grid-template-columns:1fr;}}
+    .calc-controls{display:grid;gap:20px;}
+    .calc-control-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:8px;}
+    .calc-control-name{font-family:var(--cairo);font-size:14px;color:var(--paper);font-weight:600;}
+    .calc-control-val{font-family:var(--num);font-size:17px;color:var(--teal-300);font-weight:700;font-feature-settings:'tnum';}
+    .calc-control input[type="range"]{-webkit-appearance:none;width:100%;height:4px;background:rgba(255,255,255,0.15);border-radius:2px;outline:none;}
+    .calc-control input[type="range"]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:var(--gold-400);cursor:pointer;box-shadow:0 0 0 4px rgba(184,166,103,0.2);transition:all 0.2s;}
+    .calc-control input[type="range"]::-webkit-slider-thumb:hover{background:var(--teal-300);box-shadow:0 0 0 6px rgba(72,207,174,0.3);}
+    .calc-result{display:flex;flex-direction:column;justify-content:center;text-align:center;padding:28px;
+      background:rgba(255,255,255,0.04);border-radius:20px;border:1px solid rgba(72,207,174,0.15);}
+    .calc-result-label{font-family:var(--num);font-size:11px;letter-spacing:0.22em;text-transform:uppercase;color:var(--teal-300);font-weight:600;}
+    .calc-result-big{font-family:var(--num);font-size:clamp(52px,8vw,82px);font-weight:800;color:var(--paper);margin:14px 0 6px;line-height:1;font-feature-settings:'tnum';transition:color 0.3s;}
+    .calc-result-big .unit{font-size:0.35em;color:var(--gold-400);vertical-align:top;margin-inline-start:4px;}
+    .calc-result-hint{font-size:13px;color:var(--ink-200);font-family:var(--cairo);margin-top:8px;}
+    .calc-warning{margin-top:14px;padding:10px 14px;background:rgba(196,135,18,0.15);border:1px solid rgba(196,135,18,0.4);
+      border-radius:8px;font-size:12px;color:var(--gold-200);opacity:0;max-height:0;overflow:hidden;transition:all 0.4s;}
+    .calc-warning.show{opacity:1;max-height:80px;}
+
+    /* PRINCIPLES */
+    .principles{background:linear-gradient(180deg,var(--paper-2),var(--paper));}
+    .principles-grid{margin-top:46px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+    @media(max-width:760px){.principles-grid{grid-template-columns:1fr;}}
+    .principle{background:var(--white);border-radius:16px;padding:26px 22px;border:1px solid var(--paper-3);transition:all 0.25s;}
+    .principle:hover{border-color:var(--teal-300);transform:translateY(-3px);}
+    .principle-n{font-family:var(--cairo);font-size:34px;font-weight:800;color:var(--gold-200);line-height:1;}
+    .principle-t{font-family:var(--cairo);font-size:17px;color:var(--teal-900);margin-top:8px;font-weight:800;}
+    .principle-d{margin-top:8px;font-size:13px;color:var(--ink-500);line-height:1.65;}
+
+    /* RISKS */
+    .risks-grid{margin-top:46px;display:grid;grid-template-columns:repeat(12,1fr);gap:28px;}
+    @media(max-width:900px){.risks-grid{grid-template-columns:1fr;}}
+    .heatmap{grid-column:span 7;background:var(--white);border-radius:20px;padding:26px;box-shadow:var(--shadow-card);}
+    .risks-list{grid-column:span 5;display:flex;flex-direction:column;gap:8px;}
+    @media(max-width:900px){.heatmap,.risks-list{grid-column:span 1;}}
+    .heatmap-title{font-family:var(--cairo);font-size:15px;color:var(--ink-500);font-weight:600;margin-bottom:18px;}
+    .heatmap-grid{display:grid;grid-template-columns:auto repeat(3,1fr);grid-template-rows:auto repeat(3,1fr);gap:4px;}
+    .hm-axis{font-family:var(--num);font-size:10px;font-weight:700;letter-spacing:0.15em;text-transform:uppercase;color:var(--ink-500);padding:8px;text-align:center;display:grid;place-items:center;}
+    .hm-cell{aspect-ratio:1.1;border-radius:8px;display:grid;place-items:center;position:relative;cursor:default;transition:transform 0.2s;}
+    .hm-cell:hover{transform:scale(1.04);z-index:2;}
+    .hm-cell-count{font-family:var(--num);font-size:22px;font-weight:800;color:var(--white);}
+    .hm-low{background:var(--teal-300);}
+    .hm-mid{background:var(--gold-600);}
+    .hm-high{background:var(--danger);}
+    .hm-vhigh{background:#811E08;}
+    .risk-item{background:var(--white);border-radius:12px;padding:13px 16px;display:grid;grid-template-columns:auto 1fr auto;gap:12px;
+      align-items:center;border:1px solid var(--paper-3);transition:all 0.25s;cursor:default;}
+    .risk-item:hover{border-color:var(--teal-300);transform:translateX(-4px);}
+    .risk-level{width:8px;height:8px;border-radius:50%;}
+    .risk-level.low{background:var(--ok);}
+    .risk-level.mid{background:var(--warn);}
+    .risk-level.high{background:var(--danger);}
+    .risk-text{font-size:13px;color:var(--ink-700);line-height:1.55;}
+    .risk-badge{font-family:var(--num);font-size:10px;padding:3px 8px;border-radius:100px;letter-spacing:0.1em;text-transform:uppercase;font-weight:700;}
+    .risk-badge.low{background:rgba(42,122,74,0.12);color:var(--ok);}
+    .risk-badge.mid{background:rgba(196,135,18,0.12);color:var(--warn);}
+    .risk-badge.high{background:rgba(181,51,15,0.12);color:var(--danger);}
+
+    /* KPIS */
+    .kpis-grid{margin-top:46px;display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;}
+    .kpi{background:var(--white);border-radius:14px;padding:18px;border:1px solid var(--paper-3);transition:all 0.25s;}
+    .kpi:hover{transform:translateY(-3px);box-shadow:var(--shadow-card);border-color:var(--teal-300);}
+    .kpi-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;}
+    .kpi-name{font-family:var(--cairo);font-size:13px;color:var(--ink-700);line-height:1.4;font-weight:600;}
+    .kpi-target{font-family:var(--num);font-size:16px;font-weight:800;color:var(--teal-700);white-space:nowrap;font-feature-settings:'tnum';}
+    .kpi-method{margin-top:10px;padding-top:10px;border-top:1px dashed var(--paper-3);font-size:11px;color:var(--ink-500);font-style:italic;line-height:1.5;}
+
+    /* ACCREDITATION */
+    .acc-list{margin-top:46px;display:grid;gap:12px;}
+    .acc-item{display:grid;grid-template-columns:1fr 120px 100px;gap:18px;align-items:center;padding:14px 18px;
+      background:var(--white);border-radius:12px;border:1px solid var(--paper-3);transition:all 0.25s;}
+    .acc-item:hover{border-color:var(--gold-400);transform:translateX(-4px);}
+    @media(max-width:680px){.acc-item{grid-template-columns:1fr;gap:8px;}}
+    .acc-req{font-family:var(--cairo);font-size:15px;color:var(--ink-900);font-weight:600;line-height:1.4;}
+    .acc-standard{font-family:var(--num);font-size:11px;letter-spacing:0.15em;color:var(--gold-600);font-weight:700;text-transform:uppercase;}
+    .acc-bar{height:6px;background:var(--paper-2);border-radius:3px;position:relative;overflow:hidden;}
+    .acc-bar span{position:absolute;inset-inline-start:0;top:0;bottom:0;background:linear-gradient(90deg,var(--teal-700),var(--teal-300));border-radius:3px;}
+
+    /* TIMELINE */
+    .timeline{margin-top:50px;position:relative;}
+    .timeline::before{content:'';position:absolute;top:40px;bottom:0;inset-inline-start:50%;width:1px;background:linear-gradient(180deg,var(--gold-600),var(--teal-700),transparent);}
+    @media(max-width:760px){.timeline::before{inset-inline-start:20px;}}
+    .phase{display:grid;grid-template-columns:1fr auto 1fr;gap:28px;margin-bottom:36px;align-items:center;}
+    @media(max-width:760px){.phase{grid-template-columns:40px 1fr;}.phase > :nth-child(1){display:none;}}
+    .phase-card{background:var(--white);border-radius:16px;padding:22px;box-shadow:var(--shadow-card);border:1px solid var(--paper-3);}
+    .phase-num{width:56px;height:56px;border-radius:50%;background:var(--teal-700);color:var(--white);font-family:var(--cairo);
+      font-size:20px;font-weight:800;display:grid;place-items:center;justify-self:center;position:relative;z-index:2;border:4px solid var(--paper);}
+    @media(max-width:760px){.phase-num{width:40px;height:40px;font-size:16px;}}
+    .phase:nth-child(2) .phase-num{background:var(--gold-600);}
+    .phase:nth-child(3) .phase-num{background:var(--teal-500);}
+    .phase:nth-child(4) .phase-num{background:var(--teal-900);}
+    .phase-title{font-family:var(--cairo);font-size:18px;color:var(--teal-900);font-weight:800;}
+    .phase-duration{font-family:var(--num);font-size:11px;color:var(--gold-600);letter-spacing:0.18em;text-transform:uppercase;margin-top:4px;font-weight:700;}
+    .phase-desc{margin-top:10px;font-size:14px;color:var(--ink-500);line-height:1.7;}
+
+    /* FOOTER */
+    footer{background:var(--ink-900);color:var(--paper);padding:70px 0 36px;position:relative;overflow:hidden;}
+    footer::before{content:'';position:absolute;top:0;inset-inline-start:0;inset-inline-end:0;height:3px;background:linear-gradient(90deg,var(--teal-700),var(--teal-300),var(--gold-600));}
+    .footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr;gap:36px;}
+    @media(max-width:760px){.footer-grid{grid-template-columns:1fr;gap:28px;}}
+    .footer-logo{height:80px;width:auto;margin-bottom:20px;opacity:0.9;}
+    .footer-title{font-family:var(--cairo);font-size:24px;color:var(--paper);font-weight:700;line-height:1.4;max-width:36ch;}
+    .footer-sub{margin-top:14px;font-family:var(--cairo);color:var(--ink-200);line-height:1.75;max-width:52ch;font-size:14px;}
+    .footer-col h5{font-family:var(--num);font-size:11px;font-weight:700;letter-spacing:0.2em;text-transform:uppercase;color:var(--teal-300);margin-bottom:12px;}
+    .footer-col p{font-size:14px;color:var(--ink-200);line-height:1.7;}
+    .footer-col p strong{color:var(--paper);font-family:var(--cairo);font-weight:700;}
+    .footer-credit{margin-top:40px;padding:24px 28px;background:rgba(72,207,174,0.06);border:1px solid rgba(72,207,174,0.15);border-radius:16px;}
+    .footer-credit-label{font-family:var(--num);font-size:10px;font-weight:700;color:var(--teal-300);letter-spacing:0.22em;text-transform:uppercase;margin-bottom:10px;}
+    .footer-credit-text{font-family:var(--cairo);font-size:15px;color:var(--paper);line-height:1.7;font-weight:500;}
+    .footer-credit-text span{color:var(--gold-400);font-weight:700;}
+    .footer-bottom{margin-top:40px;padding-top:22px;border-top:1px solid rgba(255,255,255,0.08);display:flex;
+      justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;font-family:var(--num);font-size:11px;color:var(--ink-300);letter-spacing:0.1em;text-transform:uppercase;}
+
+    /* MODAL */
+    .modal-backdrop{position:fixed;inset:0;background:rgba(12,31,32,0.72);backdrop-filter:blur(4px);z-index:200;
+      display:none;align-items:center;justify-content:center;padding:20px;animation:fadeIn 0.25s ease;}
+    .modal-backdrop.show{display:flex;}
+    @keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+    .modal{background:var(--paper);border-radius:24px;max-width:700px;width:100%;max-height:88vh;overflow-y:auto;
+      position:relative;animation:modalIn 0.3s ease;box-shadow:var(--shadow-lift);}
+    @keyframes modalIn{from{opacity:0;transform:translateY(20px) scale(0.97);}to{opacity:1;transform:translateY(0) scale(1);}}
+    .modal-header{padding:28px 32px 22px;position:sticky;top:0;background:var(--paper);border-bottom:1px solid var(--paper-3);z-index:2;}
+    .modal-close{position:absolute;top:18px;inset-inline-start:18px;width:36px;height:36px;border-radius:50%;background:var(--paper-3);
+      border:none;display:grid;place-items:center;cursor:pointer;color:var(--ink-900);transition:all 0.2s;font-size:16px;}
+    .modal-close:hover{background:var(--ink-900);color:var(--paper);}
+    .modal-eyebrow{font-family:var(--num);font-size:11px;font-weight:700;color:var(--gold-600);letter-spacing:0.22em;text-transform:uppercase;}
+    .modal-title{font-family:var(--cairo);font-size:clamp(20px,2.8vw,28px);color:var(--teal-900);font-weight:800;margin-top:8px;line-height:1.3;}
+    .modal-body{padding:24px 32px 32px;font-size:15px;line-height:1.9;color:var(--ink-700);}
+    .modal-body h4{font-family:var(--cairo);font-size:17px;color:var(--teal-900);margin-top:22px;margin-bottom:10px;font-weight:700;}
+    .modal-body h4:first-child{margin-top:0;}
+    .modal-body ul{list-style:none;display:grid;gap:8px;margin-top:10px;}
+    .modal-body li{position:relative;padding-inline-start:22px;font-size:14px;line-height:1.75;}
+    .modal-body li::before{content:'';position:absolute;inset-inline-start:0;top:10px;width:10px;height:1px;background:var(--gold-600);}
+    .modal-body .callout{background:var(--gold-50);border-inline-start:4px solid var(--gold-600);padding:14px 18px;margin-top:18px;
+      border-radius:0 10px 10px 0;font-family:var(--cairo);font-size:15px;color:var(--ink-700);line-height:1.75;}
+    .modal-body .simple-explain{background:var(--teal-50);border:1px solid var(--teal-100);padding:14px 18px;margin-top:16px;border-radius:12px;}
+    .modal-body .simple-explain strong{font-family:var(--cairo);font-size:13px;color:var(--teal-700);font-weight:700;display:block;margin-bottom:6px;}
+
+    /* PROB CARDS */
+    .prob-cards{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:36px;}
+    @media(max-width:760px){.prob-cards{grid-template-columns:1fr;}}
+    .prob-card{background:var(--white);border-radius:16px;padding:24px;border:1px solid var(--paper-3);transition:all 0.25s;}
+    .prob-card:hover{border-color:var(--teal-300);transform:translateY(-3px);box-shadow:var(--shadow-card);}
+    .prob-card-num{font-family:var(--cairo);font-size:32px;font-weight:800;color:var(--gold-200);line-height:1;}
+    .prob-card-title{font-family:var(--cairo);font-size:17px;font-weight:800;color:var(--teal-900);margin-top:8px;}
+    .prob-card-desc{font-size:14px;color:var(--ink-500);line-height:1.75;margin-top:8px;}
+    .fade-in{opacity:0;transform:translateY(18px);transition:opacity 0.8s ease,transform 0.8s ease;}
+    .fade-in.visible{opacity:1;transform:translateY(0);}
+    hr.hairline{border:none;height:1px;background:var(--paper-3);margin:36px 0;}
+
+    /* TWEAKS PANEL */
+    #tweaks-panel{position:fixed;bottom:24px;inset-inline-start:24px;z-index:90;background:var(--white);
+      border:1px solid var(--paper-3);border-radius:16px;padding:18px 22px;box-shadow:var(--shadow-lift);
+      width:260px;display:none;font-family:var(--cairo);}
+    #tweaks-panel.show{display:block;}
+    #tweaks-panel h4{font-size:13px;font-weight:700;color:var(--teal-900);margin-bottom:14px;}
+    .tweak-row{margin-bottom:14px;}
+    .tweak-row label{font-size:12px;color:var(--ink-500);font-weight:600;display:block;margin-bottom:6px;}
+    .tweak-row input[type=range]{width:100%;accent-color:var(--teal-700);}
+    .tweak-row select{width:100%;font-family:var(--cairo);font-size:13px;padding:6px 10px;border:1px solid var(--paper-3);border-radius:8px;background:var(--paper);}
+
+    @media print{.side-nav,.progress,.modal-backdrop{display:none!important;}body{background:white;}}
+  </style>
+</head>
+<body>
+
+<div class="progress" id="progress"></div>
+
+<nav class="side-nav" id="sideNav">
+  <a href="#hero"    data-label="الرئيسية"></a>
+  <a href="#paradox" data-label="المشكلة"></a>
+  <a href="#causes"  data-label="الأسباب"></a>
+  <a href="#ripples" data-label="الأثر"></a>
+  <a href="#bench"   data-label="المقارنة الدولية"></a>
+  <a href="#tools"   data-label="الأدوات الخمس"></a>
+  <a href="#index"   data-label="المؤشر المركّب"></a>
+  <a href="#risks"   data-label="المخاطر"></a>
+  <a href="#kpis"    data-label="مؤشرات النجاح"></a>
+  <a href="#acc"     data-label="الاعتماد"></a>
+  <a href="#impl"    data-label="التطبيق"></a>
+</nav>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="wrap topbar-inner">
+    <div class="brand-mark">
+      <img src="logo.png" class="brand-logo-img" alt="شعار مركز تأهيل للعلاج الطبيعي">
+      <div class="brand-title">
+        مركز تأهيل للعلاج الطبيعي
+        <span>الإدارة العامة للخدمات الصحية</span>
+      </div>
+    </div>
+    <div class="topbar-meta">
+      <span class="pulse"></span>
+      دراسة ومقترح منهجي .. 2026
+    </div>
+  </div>
+</header>
+
+<!-- HERO -->
+<section id="hero">
+  <div class="wrap">
+    <div class="hero-study-banner">
+      <div>
+        <div class="hero-study-label">دراسة فنية .. مقترح منهجي .. 2026</div>
+        <div class="hero-study-title">قياس رضا المستفيدين في المراكز الصحية</div>
+      </div>
+      <div class="hero-study-meta">2026</div>
+    </div>
+    <div class="hero-grid">
+      <div>
+        <h1 class="hero-title">
+          كيف نقيس رضا المستفيد<br>
+          <em>بعدالة وموثوقية؟</em>
+        </h1>
+        <p class="hero-kicker">
+          مراجعة شاملة للمنهجية الحالية، وتشخيص نقاط ضعفها، وبناء منظومة متكاملة من خمس أدوات تعمل معاً لتعطي صورة أكثر دقة وعدالة عن تجربة المستفيد الفعلية.
+        </p>
+        <div class="hero-logo-big">
+          <img src="logo.png" alt="مركز تأهيل للعلاج الطبيعي">
+          <div class="hero-logo-text">
+            مركز تأهيل للعلاج الطبيعي
+            <span>التابع للإدارة العامة للخدمات الصحية</span>
+            <span>جمعية عنيزة للتنمية والخدمات الإنسانية</span>
+          </div>
+        </div>
+        <div class="hero-meta">
+          <div class="hero-meta-item"><div class="hero-meta-k">عدد الأدوات</div><div class="hero-meta-v">5 أدوات متكاملة</div></div>
+          <div class="hero-meta-item"><div class="hero-meta-k">نطاق التطبيق</div><div class="hero-meta-v">جميع المراكز</div></div>
+          <div class="hero-meta-item"><div class="hero-meta-k">الإطار المرجعي</div><div class="hero-meta-v">CBAHI · CARF</div></div>
+          <div class="hero-meta-item"><div class="hero-meta-k">الإصدار</div><div class="hero-meta-v">1.0 .. 2026</div></div>
+        </div>
+      </div>
+      <div>
+        <div class="hero-card">
+          <div class="hero-card-label">السؤال الجوهري</div>
+          <div class="hero-card-q">لماذا لا تكفي أداة قياس واحدة لقياس الرضا؟</div>
+          <div class="hero-card-a">
+            لأن كل أداة تُغطّي جانباً مختلفاً من تجربة المستفيد. <strong>الاستبيان</strong> يُعطيك العمق، <strong>التقييم السريع</strong> يُعطيك السرعة، <strong>السلوك الفعلي</strong> يُعطيك الحقيقة. استخدام أداة واحدة فقط كمن يحكم على الصورة الكاملة من خلال زاوية صغيرة.
+          </div>
+        </div>
+        <div class="plain-box" style="margin-top:16px;">
+          <div class="plain-box-marker"></div>
+          <div class="plain-box-content">
+            <div class="plain-box-label">بكلمات بسيطة</div>
+            <div class="plain-box-text">تخيّل أنك تُقيّم طعام مطعم بسؤال واحد فقط "هل أعجبك؟" .. لن تعرف هل المشكلة في الطبخ، الخدمة، النظافة، أم السعر. هذا بالضبط ما يحدث حين نعتمد أداة قياس واحدة.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARADOX -->
+<section class="paradox" id="paradox">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">01</span> المشكلة الحالية</div>
+    <h2 class="section-title">استجابة ضعيفة في القياس.. ورضا حقيقي لا يُلتقط</h2>
+    <p class="section-lead">
+      المستفيدون راضون في الواقع الفعلي، لكن أداة القياس الوحيدة المستخدمة لا تستطيع التقاط هذا الرضا بشكل كافٍ بسبب ضعف نسبة المشاركة فيها. المشكلة في الأداة، لا في الرضا.
+    </p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">شرح مبسّط للمشكلة</div>
+        <div class="plain-box-text">الرضا الحقيقي للمستفيدين مرتفع .. لكن الاستبيان الطويل الذي يُرسَل إليهم لا يُكمله إلا قِلّة، فتأتي الأرقام غير ممثّلة للواقع. الحل ليس التشكيك في الرضا، بل بناء منظومة قياس تلتقطه بدقة أكبر.</div>
+      </div>
+    </div>
+    <div class="paradox-card">
+      <div class="paradox-mark">"</div>
+      <div class="paradox-quote">
+        نسبة الاستجابة لا تعني نسبة الرضا..<br>
+        <strong>وقياس لا يمثّل المستفيدين لا يمثّل الواقع.</strong>
+      </div>
+      <div class="paradox-meta">
+        <span>المشكلة الجوهرية</span>
+        <b>الاعتماد على أداة واحدة ذات معدل استجابة منخفض</b>
+      </div>
+    </div>
+    <div class="prob-cards">
+      <div class="prob-card">
+        <div class="prob-card-num">01</div>
+        <div class="prob-card-title">أداة قياس وحيدة</div>
+        <div class="prob-card-desc">الاعتماد الكامل على الاستبيان التفصيلي وحده رغم محدودية نسبة الاستجابة فيه، دون أدوات مكمّلة تعوّض هذا الضعف.</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-card-num">02</div>
+        <div class="prob-card-title">نسبة مشاركة منخفضة</div>
+        <div class="prob-card-desc">الاستبيان الطويل لا يُكمله إلا قِلّة من المستفيدين، مما يجعل النتائج المستخرجة غير ممثّلة لرأي الغالبية.</div>
+      </div>
+      <div class="prob-card">
+        <div class="prob-card-num">03</div>
+        <div class="prob-card-title">أدوات مكمّلة غائبة</div>
+        <div class="prob-card-desc">أربع أدوات إضافية كانت ستُعطي صورة أوضح وأكثر عدالة عن رضا المستفيدين الحقيقي تظل غير مُستثمرة.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CAUSES -->
+<section id="causes">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">02</span> الأسباب الجذرية</div>
+    <h2 class="section-title">لماذا يحدث هذا؟ خمسة أسباب جذرية</h2>
+    <p class="section-lead">
+      المشكلة ليست عشوائية .. لها أسباب محددة يمكن معالجتها. الضغط على أي سبب أدناه لقراءة التفاصيل.
+    </p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">ما معنى الأسباب الجذرية؟</div>
+        <div class="plain-box-text">الأسباب الجذرية هي المشاكل الحقيقية خلف المشكلة الظاهرة. مثلاً .. إذا كانت نسبة الاستجابة منخفضة، قد يظن البعض أن الحل هو إرسال تذكيرات أكثر، لكن السبب الجذري قد يكون أن الاستبيان طويل جداً أو وقت إرساله غير مناسب.</div>
+      </div>
+    </div>
+    <div class="causes">
+      <div class="cause">
+        <button class="cause-head" onclick="toggleCause(this)">
+          <span class="cause-num">01 / الأداة</span>
+          <span class="cause-title">أسباب في الأداة نفسها</span>
+          <span class="cause-toggle"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="cause-body"><div class="cause-inner">
+          <p style="margin-bottom:12px;font-size:14px;color:var(--teal-700);font-weight:600;">بمعنى بسيط: المشكلة في تصميم الأداة ذاتها</p>
+          <ul>
+            <li>طول الاستبيان: كلما طال الاستبيان، زاد احتمال أن يتوقف المستفيد عن الإجابة قبل نهايته.</li>
+            <li>غياب أداة قصيرة ومريحة تُغري المستفيد بإعطاء رأيه بسرعة دون جهد كبير.</li>
+            <li>عدم تعدّد قنوات التقييم (رقمي فقط) يُقصي من لا يُفضّلون الاستبيانات الإلكترونية.</li>
+            <li>التقييم يُقيس "الرضا اللفظي" فقط، ولا يُقيس السلوك الفعلي مثل العودة للخدمة.</li>
+          </ul>
+        </div></div>
+      </div>
+      <div class="cause">
+        <button class="cause-head" onclick="toggleCause(this)">
+          <span class="cause-num">02 / التوقيت</span>
+          <span class="cause-title">أسباب تتعلق بتوقيت إرسال الاستبيان</span>
+          <span class="cause-toggle"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="cause-body"><div class="cause-inner">
+          <p style="margin-bottom:12px;font-size:14px;color:var(--teal-700);font-weight:600;">التوقيت مهم جداً .. الرأي الطازج أصدق بكثير</p>
+          <ul>
+            <li>إرسال الاستبيان بعد وقت طويل من تلقّي الخدمة يُضعف دقة الذاكرة ويُقلّل الدافعية للإجابة.</li>
+            <li>عدم ربط الإرسال بنقاط محددة من رحلة المستفيد (بداية الخطة، منتصفها، نهايتها).</li>
+            <li>الإرسال العشوائي يُفقد الاستبيان قيمته التحليلية ويُصعّب مقارنة النتائج.</li>
+          </ul>
+        </div></div>
+      </div>
+      <div class="cause">
+        <button class="cause-head" onclick="toggleCause(this)">
+          <span class="cause-num">03 / القنوات</span>
+          <span class="cause-title">أسباب في آلية جمع المعلومات</span>
+          <span class="cause-toggle"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="cause-body"><div class="cause-inner">
+          <p style="margin-bottom:12px;font-size:14px;color:var(--teal-700);font-weight:600;">كثير من المستفيدين يُعطون رأيهم شفهياً .. لكنه يضيع</p>
+          <ul>
+            <li>غياب إجراء موحّد لجمع التقييم لحظياً داخل نقطة الخدمة قبل مغادرة المستفيد.</li>
+            <li>الاعتماد على قناة واحدة (رابط رقمي) يُقصي من يُفضّلون التقييم المباشر.</li>
+            <li>الملاحظات الشفهية التي يُدلي بها المستفيد أثناء الجلسة لا تُوثَّق في أي مكان.</li>
+            <li>غياب ردّ فعل ظاهر للمستفيد يُبيّن له أن رأيه وصل وأنه سيُؤخذ به.</li>
+          </ul>
+        </div></div>
+      </div>
+      <div class="cause">
+        <button class="cause-head" onclick="toggleCause(this)">
+          <span class="cause-num">04 / القياس</span>
+          <span class="cause-title">أسباب منهجية في تحليل النتائج</span>
+          <span class="cause-toggle"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="cause-body"><div class="cause-inner">
+          <p style="margin-bottom:12px;font-size:14px;color:var(--teal-700);font-weight:600;">حتى لو جُمعت البيانات، طريقة تحليلها قد تُعطي نتائج مُضلِّلة</p>
+          <ul>
+            <li>تحيّز الاستجابة: غير الراضي يميل للمشاركة أكثر من الراضي المعتدل، مما يُبالغ في حجم الشكاوى.</li>
+            <li>صغر حجم العيّنة المستجيبة يجعل نتيجة واحدة تُغيّر المؤشر بشكل غير منطقي.</li>
+            <li>الخلط بين "نسبة من أكمل الاستبيان" ونسبة الرضا الحقيقية .. وهما مفهومان مختلفان تماماً.</li>
+            <li>غياب مؤشر مركّب يجمع كل الأدوات بصورة متوازنة وعادلة.</li>
+          </ul>
+        </div></div>
+      </div>
+      <div class="cause">
+        <button class="cause-head" onclick="toggleCause(this)">
+          <span class="cause-num">05 / الثقافة</span>
+          <span class="cause-title">أسباب بيئية وثقافية</span>
+          <span class="cause-toggle"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6l4 4 4-4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+        </button>
+        <div class="cause-body"><div class="cause-inner">
+          <p style="margin-bottom:12px;font-size:14px;color:var(--teal-700);font-weight:600;">البيئة المحلية لها طبيعتها الخاصة في التعامل مع التقييم</p>
+          <ul>
+            <li>بعض المستفيدين غير معتادين على التقييم الإلكتروني وقد يشعرون بعدم الراحة منه.</li>
+            <li>الخوف من أن يُفهم التقييم السلبي كشكوى رسمية قد تؤثر على العلاقة مع المختص.</li>
+            <li>في الثقافة المحلية، كثيرون يُفضّلون إبداء رأيهم شفهياً بدلاً من الكتابة.</li>
+          </ul>
+        </div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- RIPPLES -->
+<section class="ripples" id="ripples">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">03</span> دائرة التأثير</div>
+    <h2 class="section-title">من يتأثر إذا بقي الوضع كما هو؟</h2>
+    <p class="section-lead">
+      الاعتماد على أداة واحدة لا يُضعف مؤشرات الرضا فقط .. بل يُنتج سلسلة من التأثيرات السلبية تمتد من المستفيد الفرد حتى مستوى الاعتماد المؤسسي.
+    </p>
+    <div class="ripples-grid">
+      <div class="ripple">
+        <div class="ripple-dot"></div>
+        <div class="ripple-who">المستفيد</div>
+        <div class="ripple-what">صوت صامت غير مُلتقط</div>
+        <div class="ripple-then">رأيه لا يصل، ومشاكله لا تُحلّ، فيبقى غير راضٍ أو يتوقف عن الخدمة دون أن يعرف أحد السبب</div>
+      </div>
+      <div class="ripple">
+        <div class="ripple-dot"></div>
+        <div class="ripple-who">المركز</div>
+        <div class="ripple-what">قراءة غير دقيقة للأداء</div>
+        <div class="ripple-then">مؤشر الرضا لا يعكس الواقع، فيُصنَّف المركز بأعلى أو أدنى مما يستحق فعلاً</div>
+      </div>
+      <div class="ripple">
+        <div class="ripple-dot"></div>
+        <div class="ripple-who">الإدارة</div>
+        <div class="ripple-what">عيّنة صغيرة غير ممثّلة</div>
+        <div class="ripple-then">دورة التحسين المستمر (PDCA) تتأخر لأن البيانات المتاحة لا تكفي لاتخاذ قرار</div>
+      </div>
+      <div class="ripple">
+        <div class="ripple-dot"></div>
+        <div class="ripple-who">الجمعية</div>
+        <div class="ripple-what">ضعف المقارنة بين المراكز</div>
+        <div class="ripple-then">القرارات الاستراتيجية تُبنى على أرقام لا تمثّل الواقع، فتأتي غير مُحقّقة لأهدافها</div>
+      </div>
+      <div class="ripple">
+        <div class="ripple-dot"></div>
+        <div class="ripple-who">الاعتماد</div>
+        <div class="ripple-what">أدلة غير كافية</div>
+        <div class="ripple-then">عند مراجعة CBAHI أو CARF، لا تتوفر أدلة كافية على منهجية قياس فعّالة لصوت المستفيد</div>
+      </div>
+    </div>
+    <div class="plain-box" style="margin-top:32px;background:rgba(72,207,174,0.06);border-color:rgba(72,207,174,0.25);">
+      <div class="plain-box-marker" style="background:var(--teal-300);"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label" style="color:var(--teal-300);">ما هو CBAHI وCARF؟</div>
+        <div class="plain-box-text" style="color:var(--ink-200);">CBAHI هو المركز السعودي لاعتماد المنشآت الصحية .. يمنح شهادة الجودة للمنشآت الصحية في المملكة. CARF هو منظمة دولية تُعتمد مرافق إعادة التأهيل. كلاهما يشترط وجود منهجية واضحة لقياس رضا المستفيدين والاستجابة لملاحظاتهم.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BENCHMARKS -->
+<section id="bench">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">04</span> المراجعة المقارنة</div>
+    <h2 class="section-title">ماذا يفعل العالم في قياس رضا المرضى؟</h2>
+    <p class="section-lead">
+      خمسة نماذج دولية معتمدة، كلها تتّفق على فكرة واحدة: لا يكفي سؤال واحد، ولا تكفي أداة واحدة. اختر نموذجاً لاستكشاف تفاصيله.
+    </p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">لماذا نستعرض التجارب الدولية؟</div>
+        <div class="plain-box-text">حتى لا نبدأ من الصفر. هذه النماذج العالمية جُرِّبت ونجحت في سياقات مختلفة، ومنها استُلهم مقترحنا. كل نموذج يُضيف درساً نُطبّقه في الأدوات المقترحة.</div>
+      </div>
+    </div>
+    <div class="bench-tabs" role="tablist">
+      <button class="bench-tab active" data-tab="hcahps">HCAHPS</button>
+      <button class="bench-tab" data-tab="nhs">NHS FFT</button>
+      <button class="bench-tab" data-tab="prems">PREMs</button>
+      <button class="bench-tab" data-tab="proms">PROMs</button>
+      <button class="bench-tab" data-tab="nps">NPS</button>
+    </div>
+    <div class="bench-panel active" data-panel="hcahps">
+      <div class="bench-head"><div class="bench-name">Hospital CAHPS</div><div class="bench-origin">الولايات المتحدة · CMS</div></div>
+      <div class="bench-content">
+        <div class="bench-block"><h4>الأداة المستخدمة</h4><p>استبيان موحّد يُرسَل بعد الخروج من المستشفى، يُركّز على تجربة المريض الفعلية لا مجرد رأيه العام. يشمل التواصل، النظافة، الألم، الدواء، والاستعداد للخروج.</p></div>
+        <div class="bench-block"><h4>نقطة القوة</h4><p>التوحيد المعياري يُتيح مقارنة عادلة بين آلاف المستشفيات .. وهو ما يجعله معياراً حكومياً إلزامياً في أمريكا ويرتبط بالتمويل الحكومي للمستشفيات.</p></div>
+      </div>
+      <div class="bench-lesson">الدرس المُطبَّق: أهمية التوحيد لأغراض المقارنة بين المراكز، وربط الإرسال بنقاط محددة من رحلة المستفيد.</div>
+    </div>
+    <div class="bench-panel" data-panel="nhs">
+      <div class="bench-head"><div class="bench-name">Friends & Family Test</div><div class="bench-origin">المملكة المتحدة · NHS</div></div>
+      <div class="bench-content">
+        <div class="bench-block"><h4>الأداة المستخدمة</h4><p>سؤال واحد مختصر جداً: "هل توصي بهذه الخدمة لصديق أو أحد أفراد الأسرة؟" مع تعليق اختياري قصير. يُقدَّم فور انتهاء الخدمة.</p></div>
+        <div class="bench-block"><h4>نقطة القوة</h4><p>السرعة الفائقة ترفع نسبة المشاركة بشكل كبير جداً .. وصلت في بعض المستشفيات لأكثر من 90٪. هذا يجعل النتائج أكثر تمثيلاً للواقع.</p></div>
+      </div>
+      <div class="bench-lesson">الدرس المُطبَّق: قوة التقييم اللحظي المختصر .. هو ما يُلهم أداة التقييم السريع في مقترحنا.</div>
+    </div>
+    <div class="bench-panel" data-panel="prems">
+      <div class="bench-head"><div class="bench-name">PREMs .. تجربة المريض</div><div class="bench-origin">أوروبا / أستراليا</div></div>
+      <div class="bench-content">
+        <div class="bench-block"><h4>الأداة المستخدمة</h4><p>مقاييس تُركّز على ما حدث فعلاً أثناء الرعاية: "هل شرح لك الأخصائي الخطة العلاجية؟" بدلاً من "هل أعجبتك الخدمة؟". تقيس العملية لا الشعور فقط.</p></div>
+        <div class="bench-block"><h4>نقطة القوة</h4><p>النتائج قابلة للتحسين المباشر لأنها تُشير لإجراءات محددة يمكن تغييرها .. وليس لشعور مجرّد يصعب التعامل معه.</p></div>
+      </div>
+      <div class="bench-lesson">الدرس المُطبَّق: قياس تجربة الخدمة لا الرضا فقط .. هذا النهج يتبنّاه استبياننا التفصيلي المُطوَّر.</div>
+    </div>
+    <div class="bench-panel" data-panel="proms">
+      <div class="bench-head"><div class="bench-name">PROMs .. مخرجات المريض</div><div class="bench-origin">OECD · دولي</div></div>
+      <div class="bench-content">
+        <div class="bench-block"><h4>الأداة المستخدمة</h4><p>المريض نفسه يُقيّم تحسّنه الصحي قبل العلاج وبعده: "إلى أي مدى تحسّنت قدرتك على الحركة؟". هذا يربط رضا المريض بنتيجة العلاج الفعلية.</p></div>
+        <div class="bench-block"><h4>نقطة القوة</h4><p>الربط المباشر بين الرضا والتحسّن الصحي الفعلي .. إذا تحسّن المريض، فرضاه غالباً مرتفع؛ وإذا لم يتحسّن، نعرف السبب.</p></div>
+      </div>
+      <div class="bench-lesson">الدرس المُطبَّق: مؤشرات الاستمرارية وإكمال الخطة العلاجية تُترجِم هذا المفهوم في سياقنا المحلي.</div>
+    </div>
+    <div class="bench-panel" data-panel="nps">
+      <div class="bench-head"><div class="bench-name">Net Promoter Score</div><div class="bench-origin">القطاع الخاص عالمياً</div></div>
+      <div class="bench-content">
+        <div class="bench-block"><h4>الأداة المستخدمة</h4><p>سؤال واحد: "من 0 إلى 10، كم احتمالية أن توصي بنا لشخص تعرفه؟". يصنّف المستفيدين لمروّجين (9-10) ومحايدين (7-8) ومنتقدين (0-6).</p></div>
+        <div class="bench-block"><h4>نقطة القوة</h4><p>يقيس الولاء الحقيقي لا الرضا الكلامي فقط. الشخص الراضي حقاً يوصي الآخرين .. وهذا أقوى دليل على جودة الخدمة.</p></div>
+      </div>
+      <div class="bench-lesson">الدرس المُطبَّق: التوصية والعودة للخدمة مؤشر سلوكي قوي .. جوهر أداة مؤشرات الاستمرارية في مقترحنا.</div>
+    </div>
+  </div>
+</section>
+
+<!-- FIVE TOOLS -->
+<section id="tools">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">05</span> المنهجية المقترحة</div>
+    <h2 class="section-title">خمس أدوات تتكامل، لا أداة تُلغي أخرى</h2>
+    <p class="section-lead">
+      كل أداة تُغطّي بُعداً لا تستطيع الأخرى تغطيته. اضغط على كل بطاقة لاستكشاف التفاصيل الكاملة.
+    </p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">لماذا خمس أدوات وليس واحدة؟</div>
+        <div class="plain-box-text">تماماً كما تُجري الفحوصات الطبية: لا تعتمد على فحص واحد فقط للتشخيص .. بل تجمع عدة فحوصات تتكامل لتعطيك صورة كاملة عن حالة المريض. الأدوات الخمس هنا تعمل بنفس المبدأ.</div>
+      </div>
+    </div>
+    <div class="tools-grid">
+      <article class="tool t1" onclick="openModal('tool1')">
+        <div class="tool-num">أداة 01</div>
+        <h3 class="tool-title">الاستبيان التفصيلي المُطوَّر</h3>
+        <div class="tool-role">أداة العمق .. محاور الاعتماد</div>
+        <p class="tool-brief">يبقى الاستبيان أداةً رئيسية لكنه لم يعد الوحيدة. يُضبَط توقيت إرساله، وتُخفَّف كثافته، ليُغطّي محاور الاعتماد دون أن يُشكّل عبئاً على المستفيد. وزنه في المؤشر المركّب: <strong>35٪</strong> .. تم تخفيضه من 50٪ لتوزيع الوزن بشكل أعدل.</p>
+        <button class="tool-open">تفاصيل الأداة <svg viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </article>
+      <article class="tool t2" onclick="openModal('tool2')">
+        <div class="tool-num">أداة 02</div>
+        <h3 class="tool-title">التقييم السريع بعد الجلسة</h3>
+        <div class="tool-role">رافع نسبة المشاركة .. لحظي</div>
+        <div class="smile-row">
+          <div class="smile">😊</div>
+          <div class="smile">🙂</div>
+          <div class="smile">😐</div>
+          <div class="smile">☹️</div>
+          <div class="smile">😡</div>
+        </div>
+        <p class="tool-brief" style="margin-top:14px;">وزنه في المؤشر: <strong>30٪</strong> .. رُفع من 25٪ لأهميته في رفع نسبة التمثيل.</p>
+        <button class="tool-open">تفاصيل الأداة <svg viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </article>
+      <article class="tool t3" onclick="openModal('tool3')">
+        <div class="tool-num">أداة 03</div>
+        <h3 class="tool-title">مؤشرات الاستمرارية والسلوك</h3>
+        <div class="tool-role">السلوك الفعلي .. مؤشر تأكيدي</div>
+        <p class="tool-brief">المستفيد غير الراضي لا يُجدّد باقة ولا يُكمل خطة ولا يوصي. السلوك لغة صامتة للرضا. وزنه: <strong>20٪</strong>.</p>
+        <button class="tool-open">تفاصيل الأداة <svg viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </article>
+      <article class="tool t4" onclick="openModal('tool4')">
+        <div class="tool-num">أداة 04</div>
+        <h3 class="tool-title">الشكاوى والملاحظات</h3>
+        <div class="tool-role">المؤشر العكسي .. إنذار مبكر</div>
+        <p class="tool-brief">لا يكفي عدّ الشكاوى .. يجب تحليل نوعها وزمن معالجتها ومدى تحوّلها لفرص تحسين. وزنه: <strong>15٪</strong>.</p>
+        <button class="tool-open">تفاصيل الأداة <svg viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </article>
+      <article class="tool t5" onclick="openModal('tool5')">
+        <div class="tool-num">أداة 05</div>
+        <h3 class="tool-title">توثيق الانطباع المباشر</h3>
+        <div class="tool-role">الصوت الصامت .. لحظة التواصل</div>
+        <p class="tool-brief">سجل موحّد يوثّق الملاحظات الشفهية التي كانت ستضيع .. شكر، تذمّر، طلب، اعتراض. يُدخَل ضمن التحليل الشهري.</p>
+        <button class="tool-open">تفاصيل الأداة <svg viewBox="0 0 16 16" fill="none"><path d="M10 4l-4 4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+      </article>
+    </div>
+  </div>
+</section>
+
+<!-- COMPOSITE INDEX -->
+<section class="index-sect" id="index">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">06</span> المؤشر المركّب</div>
+    <h2 class="section-title">رقم واحد يحترم تعدّد الأدوات</h2>
+    <p class="section-lead">
+      بدل الاعتماد على رقم واحد من أداة واحدة، نقترح مؤشراً مركّباً يجمع نتائج الأدوات الأربع بأوزان محسوبة تعكس أهمية كل أداة.
+    </p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">ما معنى المؤشر المركّب؟</div>
+        <div class="plain-box-text">مثل معدّل الدراسة: لا يعتمد على درجة مادة واحدة بل يحسب متوسطاً مرجّحاً لكل المواد. هنا نفس الفكرة .. كل أداة لها وزن معيّن، ونجمع نتائجها للحصول على رقم واحد عادل ومُعبِّر.</div>
+      </div>
+    </div>
+    <div class="index-grid">
+      <div class="gauge-wrap">
+        <div class="gauge-canvas"><canvas id="gaugeChart"></canvas></div>
+        <div class="gauge-center">
+          <div class="gauge-value" id="gaugeValue">91.8<span class="pct">٪</span></div>
+          <div class="gauge-label">مؤشر الرضا المركّب .. مثال توضيحي</div>
+        </div>
+      </div>
+      <div class="weights-breakdown">
+        <div class="weight-row">
+          <div><div class="weight-info"><div class="weight-dot" style="background:var(--teal-700)"></div>
+          <div><div class="weight-name">الاستبيان التفصيلي</div>
+          <div class="weight-bar"><span style="width:25%;background:var(--teal-700)"></span></div></div></div></div>
+          <div class="weight-pct">25<small style="font-size:0.55em;color:var(--gold-600)">٪</small></div>
+        </div>
+        <div class="weight-row">
+          <div><div class="weight-info"><div class="weight-dot" style="background:var(--teal-300)"></div>
+          <div><div class="weight-name">التقييم السريع بعد الجلسة</div>
+          <div class="weight-bar"><span style="width:35%;background:var(--teal-300)"></span></div></div></div></div>
+          <div class="weight-pct">35<small style="font-size:0.55em;color:var(--gold-600)">٪</small></div>
+        </div>
+        <div class="weight-row">
+          <div><div class="weight-info"><div class="weight-dot" style="background:var(--gold-600)"></div>
+          <div><div class="weight-name">مؤشرات الاستمرارية والسلوك</div>
+          <div class="weight-bar"><span style="width:25%;background:var(--gold-600)"></span></div></div></div></div>
+          <div class="weight-pct">25<small style="font-size:0.55em;color:var(--gold-600)">٪</small></div>
+        </div>
+        <div class="weight-row">
+          <div><div class="weight-info"><div class="weight-dot" style="background:var(--danger)"></div>
+          <div><div class="weight-name">الشكاوى والملاحظات</div>
+          <div class="weight-bar"><span style="width:15%;background:var(--danger)"></span></div></div></div></div>
+          <div class="weight-pct">15<small style="font-size:0.55em;color:var(--gold-600)">٪</small></div>
+        </div>
+        <div class="plain-box" style="margin-top:4px;">
+          <div class="plain-box-marker"></div>
+          <div class="plain-box-content">
+            <div class="plain-box-label">لماذا تم تخفيض وزن الاستبيان التفصيلي؟</div>
+            <div class="plain-box-text" style="font-size:13px;">الاستبيان أداة قيّمة لكنها الحلقة الأضعف من حيث نسبة الاستجابة. تخفيض وزنه يمنع استبيان ذو استجابة منخفضة من تحريف المؤشر الكلي، ويمنح الأدوات الأخرى الأكثر تمثيلاً دوراً أكبر.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="calc">
+      <h3 class="calc-title">مختبر الأوزان التفاعلي</h3>
+      <p class="calc-lead">جرّب بنفسك: عدّل نتائج كل مكوّن وشاهد كيف يتغيّر المؤشر المركّب لحظياً .. هذه التجربة تُبيّن لماذا أداة واحدة لا تكفي.</p>
+      <div class="calc-grid">
+        <div class="calc-controls">
+          <div class="calc-control">
+            <div class="calc-control-head"><span class="calc-control-name">الاستبيان التفصيلي (25٪)</span><span class="calc-control-val" id="v1">88٪</span></div>
+            <input type="range" id="s1" min="0" max="100" value="88" />
+          </div>
+          <div class="calc-control">
+            <div class="calc-control-head"><span class="calc-control-name">التقييم السريع (35٪)</span><span class="calc-control-val" id="v2">94٪</span></div>
+            <input type="range" id="s2" min="0" max="100" value="94" />
+          </div>
+          <div class="calc-control">
+            <div class="calc-control-head"><span class="calc-control-name">الاستمرارية (25٪)</span><span class="calc-control-val" id="v3">90٪</span></div>
+            <input type="range" id="s3" min="0" max="100" value="90" />
+          </div>
+          <div class="calc-control">
+            <div class="calc-control-head"><span class="calc-control-name">معالجة الشكاوى (15٪)</span><span class="calc-control-val" id="v4">96٪</span></div>
+            <input type="range" id="s4" min="0" max="100" value="96" />
+          </div>
+        </div>
+        <div class="calc-result">
+          <div class="calc-result-label">المؤشر المركّب</div>
+          <div class="calc-result-big" id="composite">91.4<span class="unit">٪</span></div>
+          <div class="calc-result-hint" id="hint">قراءة متوازنة .. أداء ممتاز</div>
+          <div class="calc-warning" id="warn"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRINCIPLES -->
+<section class="principles">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">07</span> المبادئ الحاكمة</div>
+    <h2 class="section-title">ست قواعد تحكم المنظومة كلها</h2>
+    <p class="section-lead">هذه المبادئ الستة ليست شعارات .. بل قواعد تُبنى عليها آلية القياس بكاملها.</p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">لماذا نحتاج مبادئ حاكمة؟</div>
+        <div class="plain-box-text">المبادئ الحاكمة هي "الدستور" الذي يُرشد الفريق حين تظهر مواقف غير متوقعة. مثلاً: إذا كان مؤشر مركز منخفضاً، تُرشدنا المبادئ للتحقق من المكوّنات قبل إصدار حكم .. لا إلغاء الأداة أو التشكيك في منهجيتها.</div>
+      </div>
+    </div>
+    <div class="principles-grid">
+      <div class="principle"><div class="principle-n">01</div><div class="principle-t">الاحتفاظ</div><div class="principle-d">لا يتم التخلّي عن أي أداة قائمة تخدم الاعتماد. ما يُضاف يُكمل، لا يُلغي.</div></div>
+      <div class="principle"><div class="principle-n">02</div><div class="principle-t">التكامل</div><div class="principle-d">كل أداة تُغطّي جانباً لا تستطيع الأخرى تغطيته. المنظومة أقوى من مجموع أجزائها.</div></div>
+      <div class="principle"><div class="principle-n">03</div><div class="principle-t">الملاءمة</div><div class="principle-d">لكل مرحلة من رحلة المستفيد أداة مناسبة لها .. التوقيت الصحيح يُضاعف قيمة البيانات.</div></div>
+      <div class="principle"><div class="principle-n">04</div><div class="principle-t">التوازن</div><div class="principle-d">لا أداة تُستخدم وحدها حكماً نهائياً على جودة الخدمة. التوازن يمنع التحيّز.</div></div>
+      <div class="principle"><div class="principle-n">05</div><div class="principle-t">الموثوقية</div><div class="principle-d">كل أداة تخضع لضوابط موثّقة تمنع تضخيم النتائج أو تقزيمها بقصد أو بغير قصد.</div></div>
+      <div class="principle"><div class="principle-n">06</div><div class="principle-t">التحسين</div><div class="principle-d">كل نتيجة قياس تُترجَم لإجراء تحسين قابل للمتابعة .. وإلا فالقياس مجرد ورق.</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- RISKS -->
+<section id="risks">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">08</span> تحليل المخاطر</div>
+    <h2 class="section-title">نعرف المخاطر قبل أن نبدأ</h2>
+    <p class="section-lead">أي منهجية جديدة تحمل مخاطر. الفرق بين المنهجية الناضجة والمتسرّعة هو معرفة هذه المخاطر مسبقاً والاستعداد لها.</p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">كيف تقرأ الخريطة الحرارية؟</div>
+        <div class="plain-box-text">المحور الأفقي = احتمالية حدوث الخطر. المحور الرأسي = مدى خطورة تأثيره. الخلايا الحمراء الداكنة هي الأولوية القصوى في التعامل والوقاية.</div>
+      </div>
+    </div>
+    <div class="risks-grid">
+      <div class="heatmap">
+        <div class="heatmap-title">توزيع المخاطر: الاحتمال × الأثر</div>
+        <div class="heatmap-grid">
+          <div class="hm-corner"></div>
+          <div class="hm-axis">منخفض</div><div class="hm-axis">متوسط</div><div class="hm-axis">مرتفع</div>
+          <div class="hm-axis">مرتفع</div>
+          <div class="hm-cell hm-mid"><span class="hm-cell-count">0</span></div>
+          <div class="hm-cell hm-high"><span class="hm-cell-count">2</span></div>
+          <div class="hm-cell hm-vhigh"><span class="hm-cell-count">2</span></div>
+          <div class="hm-axis">متوسط</div>
+          <div class="hm-cell hm-low"><span class="hm-cell-count">0</span></div>
+          <div class="hm-cell hm-mid"><span class="hm-cell-count">3</span></div>
+          <div class="hm-cell hm-high"><span class="hm-cell-count">2</span></div>
+          <div class="hm-axis">منخفض</div>
+          <div class="hm-cell hm-low"><span class="hm-cell-count">0</span></div>
+          <div class="hm-cell hm-low"><span class="hm-cell-count">0</span></div>
+          <div class="hm-cell hm-mid"><span class="hm-cell-count">1</span></div>
+        </div>
+        <div style="margin-top:14px;font-family:var(--num);font-size:10px;color:var(--ink-500);letter-spacing:0.15em;text-transform:uppercase;text-align:center;">الاحتمال ←</div>
+      </div>
+      <div class="risks-list">
+        <div class="risk-item"><span class="risk-level high"></span><div class="risk-text">قراءة المؤشر المركّب دون تحليل مكوّناته .. يُوهِم بنتيجة غير حقيقية</div><span class="risk-badge high">حرج</span></div>
+        <div class="risk-item"><span class="risk-level high"></span><div class="risk-text">ضعف حلقة التغذية الراجعة للمستفيد بعد الشكاوى .. يُفقد الثقة في المنظومة</div><span class="risk-badge high">حرج</span></div>
+        <div class="risk-item"><span class="risk-level high"></span><div class="risk-text">تحيّز موظف الاستقبال عند تقديم التقييم السريع .. يُشوّه النتائج اللحظية</div><span class="risk-badge high">حرج</span></div>
+        <div class="risk-item"><span class="risk-level high"></span><div class="risk-text">تضخّم حجم البيانات دون قدرة تحليل كافية .. بيانات كثيرة لا تُقرأ تساوي لا شيء</div><span class="risk-badge high">حرج</span></div>
+        <div class="risk-item"><span class="risk-level mid"></span><div class="risk-text">تعارض ظاهري بين نتيجة التقييم السريع والاستبيان .. يحتاج تفسيراً لا إلغاءً</div><span class="risk-badge mid">متوسط</span></div>
+        <div class="risk-item"><span class="risk-level mid"></span><div class="risk-text">عدم اكتمال العيّنة الشهرية للاستبيان التفصيلي</div><span class="risk-badge mid">متوسط</span></div>
+        <div class="risk-item"><span class="risk-level mid"></span><div class="risk-text">مقاومة التغيير من بعض الكوادر .. تُعالَج بالتوعية والتدريب المبكر</div><span class="risk-badge mid">متوسط</span></div>
+        <div class="risk-item"><span class="risk-level mid"></span><div class="risk-text">تكرار نفس المستفيد للتقييم بما يُشوّه إحصائيات التقييم السريع</div><span class="risk-badge mid">متوسط</span></div>
+        <div class="risk-item"><span class="risk-level mid"></span><div class="risk-text">انخفاض جودة التقييم السريع بسبب عدم جدية المستفيدين</div><span class="risk-badge mid">متوسط</span></div>
+        <div class="risk-item"><span class="risk-level low"></span><div class="risk-text">تأثير موسمي على المؤشرات .. يُعالَج بالمقارنة بنفس الفترة من العام السابق</div><span class="risk-badge low">منخفض</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- KPIS -->
+<section id="kpis">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">09</span> مؤشرات النجاح</div>
+    <h2 class="section-title">كيف نحكم على المنهجية نفسها؟</h2>
+    <p class="section-lead">المنهجية الناضجة تُخضع نفسها للقياس. هذه عشرة مؤشرات تُقيّم جودة أداة القياس ذاتها .. لا رضا المستفيد فحسب.</p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">الفرق بين مؤشر الرضا ومؤشر نجاح المنهجية</div>
+        <div class="plain-box-text">مؤشر الرضا يقيس رأي المستفيد في الخدمة. أما مؤشر نجاح المنهجية فيقيس: هل أداة القياس نفسها تعمل بشكل صحيح؟ هل تمثّل المستفيدين؟ هل تُترجَم نتائجها لتحسين فعلي؟ .. هذا هو ضمان الجودة لأداة القياس ذاتها.</div>
+      </div>
+    </div>
+    <div class="kpis-grid">
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">ارتفاع معدل المشاركة الكلية</div><div class="kpi-target">≥ 50٪</div></div><div class="kpi-method">خلال 3 أشهر من التطبيق .. مقارنة بالمعدل الحالي</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">تحسّن الاستجابة للاستبيان</div><div class="kpi-target">+15٪</div></div><div class="kpi-method">مقارنة قبل/بعد ضبط توقيت الإرسال</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">الملاحظات النوعية الموثّقة</div><div class="kpi-target">≥ 20</div></div><div class="kpi-method">شهرياً من السجل الموحّد للانطباعات المباشرة</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">زمن إغلاق الشكاوى</div><div class="kpi-target">≤ 7 أيام</div></div><div class="kpi-method">متوسط الزمن من تاريخ الشكوى حتى إغلاقها</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">الشكاوى المُغلقة ضمن المهلة</div><div class="kpi-target">≥ 90٪</div></div><div class="kpi-method">من إجمالي الشكاوى المسجّلة شهرياً</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">تحويل النتائج لتحسين موثّق</div><div class="kpi-target">100٪</div></div><div class="kpi-method">كل محور ضعيف يُفضي لإجراء تحسين مكتوب</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">استقرار أوزان المؤشر</div><div class="kpi-target">≤ 5٪</div></div><div class="kpi-method">تباين في الأوزان بين الأشهر .. يضمن ثبات المنهجية</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">دقة التفريق في التقارير</div><div class="kpi-target">100٪</div></div><div class="kpi-method">التقارير تُميّز بين نسبة المشاركة ونسبة الرضا دائماً</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">رضا الفرق الميدانية</div><div class="kpi-target">≥ 80٪</div></div><div class="kpi-method">استبيان قصير للكوادر بعد 3 أشهر من التطبيق</div></div>
+      <div class="kpi"><div class="kpi-head"><div class="kpi-name">قابلية التعميم على المراكز</div><div class="kpi-target">3 مراكز</div></div><div class="kpi-method">تطبيق في 3 مراكز خلال 6 أشهر من إتمام النموذج</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ACCREDITATION -->
+<section id="acc">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">10</span> مواءمة الاعتماد</div>
+    <h2 class="section-title">كيف يدعم المقترح متطلبات الاعتماد؟</h2>
+    <p class="section-lead">ثمانية متطلبات اعتمادية .. يُلبّيها المقترح تلبيةً كاملة، ويُقدّم أدلة إضافية تتجاوز الحد الأدنى المطلوب.</p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">لماذا الاعتماد مهم؟</div>
+        <div class="plain-box-text">شهادات الاعتماد (CBAHI، CARF) تُثبت أن المنشأة تلتزم بمعايير جودة دولية. الحصول عليها يعني ثقة أكبر من المستفيدين، وتمييزاً مهنياً، وأحياناً متطلبات تعاقدية. قياس رضا المستفيدين بمنهجية موثّقة شرط أساسي في كلا الاعتمادين.</div>
+      </div>
+    </div>
+    <div class="acc-list">
+      <div class="acc-item"><div><div class="acc-req">أداة منهجية موثّقة لقياس رضا المستفيد</div><div class="acc-standard" style="margin-top:4px;">CBAHI · CARF</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">تحليل النتائج وتحويلها لإجراءات تحسين فعلية</div><div class="acc-standard" style="margin-top:4px;">CBAHI</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">قياس مخرجات الأشخاص المستفيدين ورضاهم</div><div class="acc-standard" style="margin-top:4px;">CARF</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">نظام لإدارة الشكاوى ومتابعة إغلاقها</div><div class="acc-standard" style="margin-top:4px;">CBAHI · وزارة الصحة</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">التوثيق المهني للملاحظات النوعية</div><div class="acc-standard" style="margin-top:4px;">CBAHI</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">تتبّع مؤشرات تجربة المريض على المستوى المؤسسي</div><div class="acc-standard" style="margin-top:4px;">NHIC · NPHIES</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">حماية حق المستفيد في الرفض دون أي تأثير سلبي</div><div class="acc-standard" style="margin-top:4px;">المعايير الأخلاقية · CBAHI</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+      <div class="acc-item"><div><div class="acc-req">الموضوعية وتجنّب التحيّز في قراءة النتائج</div><div class="acc-standard" style="margin-top:4px;">الممارسات الدولية</div></div><div class="acc-bar"><span style="width:100%"></span></div><div class="acc-standard" style="text-align:center;color:var(--teal-700);">تغطية كاملة</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- TIMELINE -->
+<section id="impl">
+  <div class="wrap">
+    <div class="section-tag"><span class="num">11</span> آلية التطبيق</div>
+    <h2 class="section-title">أربع مراحل واضحة للتطبيق</h2>
+    <p class="section-lead">لا قفزات، ولا مفاجآت. كل مرحلة تنتهي بنقطة مراجعة واضحة تُقرّر: هل نتابع أم نُعدّل؟</p>
+    <div class="plain-box">
+      <div class="plain-box-marker"></div>
+      <div class="plain-box-content">
+        <div class="plain-box-label">استراتيجية التطبيق التدريجي</div>
+        <div class="plain-box-text">التطبيق يبدأ في مركز واحد كنموذج تجريبي قبل التعميم .. هذا يُتيح اكتشاف التحديات الميدانية ومعالجتها بتكلفة منخفضة قبل أن تُطبَّق المنهجية في جميع المراكز.</div>
+      </div>
+    </div>
+    <div class="timeline">
+      <div class="phase">
+        <div></div>
+        <div class="phase-num">01</div>
+        <div class="phase-card">
+          <div class="phase-duration">أسبوعان</div>
+          <div class="phase-title">اعتماد المنهجية وتوثيقها</div>
+          <div class="phase-desc">توثيق الأدوات الخمس، تحديد المسؤوليات، اعتماد معادلة المؤشر المركّب، وإعداد الحقيبة التدريبية. المخرج: وثيقة منهجية رسمية معتمدة من إدارة الجودة.</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-card">
+          <div class="phase-duration">3 أشهر</div>
+          <div class="phase-title">التطبيق التجريبي في مركز العلاج الطبيعي</div>
+          <div class="phase-desc">تطبيق المنظومة كاملة في مركز واحد كنموذج رائد، مع قياس جميع المؤشرات وتسجيل التحديات الميدانية والحلول المُطبَّقة.</div>
+        </div>
+        <div class="phase-num">02</div>
+        <div></div>
+      </div>
+      <div class="phase">
+        <div></div>
+        <div class="phase-num">03</div>
+        <div class="phase-card">
+          <div class="phase-duration">3 أسابيع</div>
+          <div class="phase-title">التحليل والمراجعة النقدية</div>
+          <div class="phase-desc">مقارنة النتائج قبل/بعد، مراجعة الأوزان وتعديلها إن لزم، استخلاص الدروس المستفادة، والتوصية: هل نُعمّم كما هو أم نُعدّل أولاً؟</div>
+        </div>
+      </div>
+      <div class="phase">
+        <div class="phase-card">
+          <div class="phase-duration">3 أشهر</div>
+          <div class="phase-title">التعميم التدريجي على المراكز الأخرى</div>
+          <div class="phase-desc">نقل المنهجية تدريجياً: السمع والتخاطب أولاً، ثم الخدمات العلاجية الخارجية، ثم الخدمات المنزلية .. مع تكييف أوزان المؤشر لطبيعة كل مركز.</div>
+        </div>
+        <div class="phase-num">04</div>
+        <div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="footer-grid">
+      <div>
+        <img src="logo.png" class="footer-logo" alt="مركز تأهيل للعلاج الطبيعي">
+        <div class="footer-title">قراءة عادلة لرضا المستفيد،<br>ومنهجية موثوقة للاعتماد.</div>
+        <div class="footer-sub">هذه دراسة فنية ومقترح منهجي قابل للاعتماد والتعميم، تُقدَّم لإدارة الجودة بوصفها أساساً يمكن البناء عليه، وليست وثيقة قرار نهائية.</div>
+      </div>
+      <div class="footer-col">
+        <h5>الإطار المرجعي</h5>
+        <p><strong>CBAHI</strong><br>المركز السعودي لاعتماد المنشآت الصحية</p>
+        <p style="margin-top:10px;"><strong>CARF</strong><br>لجنة اعتماد مرافق إعادة التأهيل</p>
+        <p style="margin-top:10px;"><strong>NHIC</strong><br>المركز الوطني للمعلوماتية الصحية</p>
+      </div>
+      <div class="footer-col">
+        <h5>النماذج الدولية المرجعية</h5>
+        <p>HCAHPS · NHS FFT · PREMs · PROMs · NPS</p>
+        <p style="margin-top:10px;font-size:12px;opacity:0.7;">الإصدار 1.0 .. يُراجَع كل 6 أشهر</p>
+      </div>
+    </div>
+
+    <div class="footer-credit">
+      <div class="footer-credit-label">إعداد</div>
+      <div class="footer-credit-text">
+        إدارة مركز تأهيل للعلاج الطبيعي .. التابع للإدارة العامة للخدمات الصحية<br>
+        بالتعاون مع إدارة التخطيط والجودة<br>
+        <span>أ. تامر جلال .. مدير التخطيط والأداء المؤسسي</span>
+      </div>
+    </div>
+
+    <div class="footer-bottom">
+      <div>© وثيقة داخلية .. للاعتماد والتعميم</div>
+      <div>مركز تأهيل للعلاج الطبيعي · 2026</div>
+    </div>
+  </div>
+</footer>
+
+<!-- MODALS -->
+<div class="modal-backdrop" id="modal-tool1" onclick="closeModalIfBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-eyebrow">الأداة 01 .. وزن: 25٪</div>
+      <div class="modal-title">الاستبيان التفصيلي المُطوَّر</div>
+    </div>
+    <div class="modal-body">
+      <div class="simple-explain"><strong>بكلمات بسيطة</strong>هو نموذج أسئلة مفصّل يُرسَل للمستفيد في أوقات محددة من رحلته العلاجية، يُغطّي جميع جوانب الخدمة بعمق. تم تخفيض وزنه من 50٪ إلى 35٪ لأنه .. رغم عمقه .. يعاني من ضعف نسبة الاستجابة.</div>
+      <h4>لماذا نحتفظ به رغم تخفيض وزنه؟</h4>
+      <ul>
+        <li>يُغطّي محاور الاعتماد التي تتطلبها CBAHI وCARF ولا تغطيها الأدوات الأخرى.</li>
+        <li>يُعطي عمقاً تحليلياً لا تستطيع الأدوات المختصرة توفيره.</li>
+        <li>يُتيح تحليل الأسباب الجذرية لأي انخفاض في الرضا.</li>
+      </ul>
+      <h4>المحاور التسعة المُغطّاة</h4>
+      <ul>
+        <li>جودة الخدمة العلاجية المقدمة والكفاءة المهنية للفريق.</li>
+        <li>وضوح الإجراءات والمعلومات المقدمة للمستفيد في كل خطوة.</li>
+        <li>جودة التواصل والتفاعل بين الأخصائي والمستفيد.</li>
+        <li>احترام الخصوصية والكرامة طوال فترة العلاج.</li>
+        <li>مشاركة المستفيد في الخطة العلاجية واتخاذ القرار.</li>
+        <li>سهولة الوصول للخدمة (المواعيد، المسافة، الانتظار).</li>
+        <li>كفاءة التعامل مع الشكاوى والملاحظات.</li>
+        <li>جودة البيئة المادية والمرافق والنظافة.</li>
+        <li>الرضا العام عن تجربة الخدمة بكاملها.</li>
+      </ul>
+      <h4>التغيير المقترح: ضبط توقيت الإرسال</h4>
+      <ul>
+        <li>بعد الجلسة الأولى أو الثانية: رأي مبكر قبل أن تتشكّل الصورة النهائية.</li>
+        <li>في منتصف الخطة العلاجية: رصد مبكر للمشاكل قبل انتهاء الخطة.</li>
+        <li>عند نهاية الخطة أو إغلاق الملف: التقييم الختامي الشامل.</li>
+        <li>عند شراء باقة جديدة أو تجديدها: لحظة رضا أو عدمه.</li>
+      </ul>
+      <div class="callout">القيمة الجوهرية: العمق التحليلي وتغطية متطلبات الاعتماد. تخفيف وزنه لا يعني التخلّي عنه .. بل يعني توزيع المسؤولية بعدالة بين الأدوات.</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-tool2" onclick="closeModalIfBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-eyebrow">الأداة 02 .. وزن: 35٪</div>
+      <div class="modal-title">التقييم السريع بعد الجلسة</div>
+    </div>
+    <div class="modal-body">
+      <div class="simple-explain"><strong>بكلمات بسيطة</strong>بدل انتظار الاستبيان الطويل، يُقدَّم للمستفيد بعد كل جلسة سؤال واحد فقط: "كيف كانت جلستك؟" بضغطة واحدة على أحد الوجوه التعبيرية. سريع جداً .. 5 ثوانٍ فقط!</div>
+      <h4>مقياس الأداة</h4>
+      <ul>
+        <li><strong>😊 راضٍ جداً</strong> .. تجربة ممتازة تستحق التعزيز والإشادة.</li>
+        <li><strong>🙂 راضٍ</strong> .. تجربة جيدة مع فرص تحسين طفيفة.</li>
+        <li><strong>😐 محايد</strong> .. يستحق الفحص: ما الذي لم يُحقّق التميّز؟</li>
+        <li><strong>☹️ غير راضٍ</strong> .. مؤشر تنبيه يستوجب متابعة ومناقشة.</li>
+        <li><strong>😡 غير راضٍ جداً</strong> .. تدخّل إداري فوري وتوثيق كشكوى رسمية.</li>
+      </ul>
+      <h4>لماذا رُفع وزنه من 25٪ إلى 30٪؟</h4>
+      <ul>
+        <li>يُعطي أعلى نسبة تمثيل للمستفيدين لأنه لا يتطلب جهداً.</li>
+        <li>يلتقط الانطباع اللحظي الصادق قبل أن يتلاشى مع الزمن.</li>
+        <li>يُعوّض جزءاً من الفجوة الناتجة عن خفض وزن الاستبيان.</li>
+      </ul>
+      <div class="callout">تنبيه: التقييم السريع مؤشر يومي لحظي، لا يُستخدم بمعزل عن الأدوات الأخرى. الوجه الغاضب يُطلق تنبيهاً للمتابعة، لكنه لا يُعطي تفسيراً .. هنا يكمل الاستبيان التفصيلي دوره.</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-tool3" onclick="closeModalIfBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-eyebrow">الأداة 03 .. وزن: 25٪</div>
+      <div class="modal-title">مؤشرات الاستمرارية والسلوك</div>
+    </div>
+    <div class="modal-body">
+      <div class="simple-explain"><strong>بكلمات بسيطة</strong>المستفيد الراضي يُجدّد باقته، يُكمل خطته العلاجية، ويوصي أصدقاءه. المستفيد غير الراضي يختفي بصمت .. ولا نعرف لماذا. هذه الأداة تُراقب السلوك الفعلي كـ"مرآة للرضا" الحقيقي.</div>
+      <h4>المؤشرات السلوكية الثمانية</h4>
+      <ul>
+        <li>معدل تكرار الدفع عند نفس المستفيد (عدد المرات التي يعود).</li>
+        <li>نسبة شراء الباقات العلاجية من إجمالي المستفيدين.</li>
+        <li>نسبة تجديد الباقات عند انتهائها.</li>
+        <li>نسبة إكمال الخطة العلاجية كاملة دون توقف مبكر.</li>
+        <li>نسبة الاستمرار في الجلسات دون انقطاع غير مبرر.</li>
+        <li>معدل عودة المستفيد للخدمة بعد فترة غياب.</li>
+        <li>عدد المستفيدين الجدد القادمين عبر التوصية من مستفيد سابق.</li>
+        <li>معدل الانقطاعات غير المبررة (مؤشر عكسي .. كلما ارتفع، انخفض الرضا).</li>
+      </ul>
+      <div class="callout">مهم: هذه المؤشرات لا تُسمّى "رضا" بشكل مستقل. لكن أي تناقض حاد بين مؤشر الرضا المرتفع وانخفاض الاستمرارية يستوجب التحقق الفوري.</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-tool4" onclick="closeModalIfBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-eyebrow">الأداة 04 .. وزن: 15٪</div>
+      <div class="modal-title">الشكاوى والملاحظات</div>
+    </div>
+    <div class="modal-body">
+      <div class="simple-explain"><strong>بكلمات بسيطة</strong>الشكوى هبة .. تُخبرك تحديداً بما لا يُعجب المستفيد. كثير من المنشآت تَقيس فقط عدد الشكاوى. نحن نذهب أبعد: نُحلّل نوعها، وزمن معالجتها، وهل تحوّلت لتحسين حقيقي.</div>
+      <h4>أبعاد التحليل الستة</h4>
+      <ul>
+        <li>عدد الشكاوى في الفترة .. مقارنة بالفترة السابقة والمركز الآخر.</li>
+        <li>تصنيف الشكاوى: هل هي في الخدمة؟ الموظف؟ الإجراء؟ البيئة؟</li>
+        <li>تكرار الشكاوى على نفس النقطة .. إشارة لمشكلة جذرية لم تُحلّ.</li>
+        <li>زمن معالجة الشكوى .. الهدف: إغلاق خلال 7 أيام.</li>
+        <li>رضا المستفيد بعد الإغلاق: هل شعر أن شكواه أُخذت بجدية؟</li>
+        <li>نسبة الشكاوى التي تحوّلت لفرصة تحسين موثّقة ومُطبَّقة.</li>
+      </ul>
+      <div class="callout">انتبه: قِلّة الشكاوى لا تعني دائماً ارتفاع الرضا! قد تعني أن قنوات الشكوى غير واضحة أو أن المستفيد يخشى الشكوى. لهذا يُقرأ هذا المؤشر دائماً بالتوازي مع نسبة المشاركة في القياس.</div>
+    </div>
+  </div>
+</div>
+
+<div class="modal-backdrop" id="modal-tool5" onclick="closeModalIfBackdrop(event)">
+  <div class="modal">
+    <div class="modal-header">
+      <button class="modal-close" onclick="closeModal()">✕</button>
+      <div class="modal-eyebrow">الأداة 05</div>
+      <div class="modal-title">توثيق الانطباع المباشر</div>
+    </div>
+    <div class="modal-body">
+      <div class="simple-explain"><strong>بكلمات بسيطة</strong>كثيراً ما يقول المستفيد بعد الجلسة "الله يعطيك العافية، هذا الأخصائي ممتاز" أو "هذا الكرسي غير مريح" .. كلاهما معلومة ذهبية تضيع! هذه الأداة تُلزم الموظف بتسجيلها في نموذج بسيط فوراً.</div>
+      <h4>أنواع الانطباعات الموثّقة</h4>
+      <ul>
+        <li>ملاحظة إيجابية مباشرة: ثناء على أخصائي أو إجراء أو مرفق.</li>
+        <li>تذمّر أو ملاحظة سلبية شفهية .. حتى لو كانت غير رسمية.</li>
+        <li>طلب تغيير أخصائي أو تعديل في الخطة العلاجية.</li>
+        <li>اعتراض على موعد أو إجراء تشغيلي (مثل وقت الانتظار).</li>
+        <li>ملاحظة تتعلق بالسعر أو الباقات أو آلية الدفع.</li>
+        <li>ملاحظة على البيئة المادية: نظافة، درجة حرارة، تجهيزات.</li>
+        <li>تعليق على التحسّن العلاجي الملحوظ أو عدمه.</li>
+      </ul>
+      <div class="callout">الشرط الجوهري: لا يبقى هذا الانطباع حبيس ذاكرة الموظف .. يُوثَّق فوراً في سجل موحّد بسيط لا يستغرق دقيقة واحدة، ثم يدخل في التحليل الشهري ضمن المؤشر المركّب.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TWEAKS PANEL -->
+<div id="tweaks-panel">
+  <h4>⚙️ Tweaks</h4>
+  <div class="tweak-row">
+    <label>حجم الخط</label>
+    <input type="range" id="tw-fontsize" min="85" max="115" value="100" oninput="applyTweaks()">
+  </div>
+  <div class="tweak-row">
+    <label>نمط الألوان</label>
+    <select id="tw-theme" onchange="applyTweaks()">
+      <option value="default">الأخضر الزمردي (الافتراضي)</option>
+      <option value="blue">الأزرق الطبي</option>
+      <option value="dark">الداكن</option>
+    </select>
+  </div>
+  <div class="tweak-row">
+    <label>كثافة الشروحات المبسّطة</label>
+    <select id="tw-explain" onchange="applyTweaks()">
+      <option value="show">إظهار كل الشروحات</option>
+      <option value="hide">إخفاء الشروحات</option>
+    </select>
+  </div>
+</div>
+
+<script>
+// Progress bar
+const progress = document.getElementById('progress');
+const sideNav = document.getElementById('sideNav');
+window.addEventListener('scroll', () => {
+  const h = document.documentElement;
+  const pct = h.scrollTop / (h.scrollHeight - h.clientHeight);
+  progress.style.width = (pct * 100) + '%';
+  if (h.scrollTop > 400) sideNav.classList.add('show');
+  else sideNav.classList.remove('show');
+});
+
+// Active side nav
+const navLinks = document.querySelectorAll('.side-nav a');
+const sections = Array.from(document.querySelectorAll('section[id]'));
+const sectionObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      navLinks.forEach(l => l.classList.remove('active'));
+      const link = document.querySelector(`.side-nav a[href="#${e.target.id}"]`);
+      if (link) link.classList.add('active');
+    }
+  });
+}, { rootMargin: '-40% 0px -55% 0px' });
+sections.forEach(s => sectionObs.observe(s));
+
+// Accordion
+function toggleCause(btn) {
+  const cause = btn.parentElement;
+  const isOpen = cause.classList.contains('open');
+  document.querySelectorAll('.cause').forEach(c => c.classList.remove('open'));
+  if (!isOpen) cause.classList.add('open');
+}
+
+// Bench tabs
+document.querySelectorAll('.bench-tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    const target = tab.dataset.tab;
+    document.querySelectorAll('.bench-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.bench-panel').forEach(p => p.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelector(`.bench-panel[data-panel="${target}"]`).classList.add('active');
+  });
+});
+
+// Gauge
+const gaugeCtx = document.getElementById('gaugeChart').getContext('2d');
+const gaugeChart = new Chart(gaugeCtx, {
+  type: 'doughnut',
+  data: {
+    datasets: [{
+      data: [91.8, 8.2],
+      backgroundColor: [
+        (ctx) => {
+          const chart = ctx.chart;
+          const { ctx: c, chartArea } = chart;
+          if (!chartArea) return '#0B6663';
+          const grad = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
+          grad.addColorStop(0, '#128C87');
+          grad.addColorStop(0.7, '#0B6663');
+          grad.addColorStop(1, '#063A38');
+          return grad;
+        },
+        '#EAE1CC'
+      ],
+      borderWidth: 0,
+      circumference: 270,
+      rotation: -135,
+      cutout: '78%'
+    }]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    animation: { duration: 1500, easing: 'easeOutCubic' },
+    plugins: { legend: { display: false }, tooltip: { enabled: false } }
+  }
+});
+
+// Calculator .. updated weights
+const weights = { s1: 0.25, s2: 0.35, s3: 0.25, s4: 0.15 };
+const sliders = ['s1','s2','s3','s4'];
+const valSpans = ['v1','v2','v3','v4'];
+const compositeEl = document.getElementById('composite');
+const hintEl = document.getElementById('hint');
+const warnEl = document.getElementById('warn');
+
+function updateComposite() {
+  let val = 0;
+  sliders.forEach((id, i) => {
+    const v = +document.getElementById(id).value;
+    document.getElementById(valSpans[i]).textContent = v + '٪';
+    val += v * weights[id];
+  });
+  const result = val.toFixed(1);
+  compositeEl.innerHTML = result + '<span class="unit">٪</span>';
+  if (val >= 85) {
+    compositeEl.style.color = '#48CFAE';
+    hintEl.textContent = 'أداء ممتاز .. قراءة متوازنة من الأدوات الأربع';
+  } else if (val >= 70) {
+    compositeEl.style.color = '#FAF8F2';
+    hintEl.textContent = 'أداء جيد مع فرص تحسين في بعض المحاور';
+  } else if (val >= 50) {
+    compositeEl.style.color = '#E8DCB2';
+    hintEl.textContent = 'تنبيه: يستوجب مراجعة المحاور الضعيفة فوراً';
+  } else {
+    compositeEl.style.color = '#E88A6B';
+    hintEl.textContent = 'تدخّل عاجل مطلوب .. الأداء دون المستوى المقبول';
+  }
+  const values = sliders.map(id => +document.getElementById(id).value);
+  const max = Math.max(...values), min = Math.min(...values);
+  if (max - min > 40) {
+    warnEl.classList.add('show');
+    warnEl.textContent = '⚠ تناقض حاد بين الأدوات .. يستوجب التحقق قبل اتخاذ قرار';
+  } else {
+    warnEl.classList.remove('show');
+  }
+}
+sliders.forEach(id => document.getElementById(id).addEventListener('input', updateComposite));
+updateComposite();
+
+// Modal
+let currentModal = null;
+function openModal(id) {
+  closeModal();
+  const m = document.getElementById('modal-' + id);
+  if (m) { m.classList.add('show'); currentModal = m; document.body.style.overflow = 'hidden'; }
+}
+function closeModal() {
+  if (currentModal) { currentModal.classList.remove('show'); currentModal = null; document.body.style.overflow = ''; }
+}
+function closeModalIfBackdrop(e) {
+  if (e.target.classList.contains('modal-backdrop')) closeModal();
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+// Fade in
+const fadeEls = document.querySelectorAll('.section-title,.section-lead,.cause,.ripple,.tool,.kpi,.acc-item,.phase,.principle,.risk-item,.plain-box');
+fadeEls.forEach(el => el.classList.add('fade-in'));
+const fadeObs = new IntersectionObserver((entries) => {
+  entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('visible'); fadeObs.unobserve(e.target); } });
+}, { threshold: 0.12 });
+fadeEls.forEach(el => fadeObs.observe(el));
+
+// Tweaks
+window.addEventListener('message', e => {
+  if (e.data.type === '__activate_edit_mode') document.getElementById('tweaks-panel').classList.add('show');
+  if (e.data.type === '__deactivate_edit_mode') document.getElementById('tweaks-panel').classList.remove('show');
+});
+window.parent.postMessage({ type: '__edit_mode_available' }, '*');
+
+function applyTweaks() {
+  const fs = document.getElementById('tw-fontsize').value;
+  document.documentElement.style.fontSize = fs + '%';
+  const theme = document.getElementById('tw-theme').value;
+  if (theme === 'blue') {
+    document.documentElement.style.setProperty('--teal-700', '#0B4E8C');
+    document.documentElement.style.setProperty('--teal-300', '#5BA3D9');
+    document.documentElement.style.setProperty('--teal-900', '#061E36');
+  } else if (theme === 'dark') {
+    document.documentElement.style.setProperty('--paper', '#1A1A1A');
+    document.documentElement.style.setProperty('--white', '#2A2A2A');
+    document.documentElement.style.setProperty('--ink-900', '#F0F0F0');
+  } else {
+    document.documentElement.style.setProperty('--teal-700', '#0B6663');
+    document.documentElement.style.setProperty('--teal-300', '#48CFAE');
+    document.documentElement.style.setProperty('--teal-900', '#063A38');
+    document.documentElement.style.setProperty('--paper', '#FAF8F2');
+    document.documentElement.style.setProperty('--white', '#FFFFFF');
+    document.documentElement.style.setProperty('--ink-900', '#0C1F20');
+  }
+  const explain = document.getElementById('tw-explain').value;
+  document.querySelectorAll('.plain-box').forEach(b => {
+    b.style.display = explain === 'hide' ? 'none' : '';
+  });
+  window.parent.postMessage({ type: '__edit_mode_set_keys', edits: { fontSize: +fs, theme, showExplanations: explain } }, '*');
+}
+</script>
+</body>
+</html>
